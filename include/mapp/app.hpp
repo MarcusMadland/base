@@ -8,17 +8,11 @@
 
 namespace mapp 
 {
-	struct AppParams
-	{
-		const char* name = "Unnamed Application";
-		uint32_t width = 1280;
-		uint32_t height = 720;
-	};
-	
+
 	class App
 	{
 	public:
-		explicit App(const AppParams& params);
+		explicit App(Window* window = nullptr);
 		virtual ~App() = default;
 
 		App(const App&) = delete;

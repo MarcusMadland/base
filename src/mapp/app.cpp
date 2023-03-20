@@ -7,12 +7,12 @@ namespace mapp
 		this, std::placeholders::_1)
 	App* App::instance = nullptr;
 
-	App::App(const AppParams& params)
+	App::App(Window* window)
 		: isRunning(true)
 		, isMinimized(false)
 		, lastFrameTime(0.0f)
 		, deltaTime(0.0f)
-		, window(nullptr)
+		, window(window)
 	{
 		if (!instance)
 		{
@@ -20,6 +20,11 @@ namespace mapp
 			
 		}
 		instance = this;
+
+		if (window) 
+		{
+            window->setEventCallback(BIND_EVENT_FN(onEvent));
+		}
 	}
 
 	void App::pushLayer(Layer* layer)

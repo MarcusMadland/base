@@ -31,8 +31,6 @@ namespace mapp
 		Window(const char* name, uint32_t width, uint32_t height);
 		~Window();
 
-		virtual void onInit() {}
-		virtual void onShutdown() {}
 		virtual void onUpdate(const float& dt) {}
 
 		void setEventCallback(const std::function<void(Event&)>& callback);
@@ -40,7 +38,7 @@ namespace mapp
 		[[nodiscard]] uint32_t getWidth() const { return windowInfo.width; }
 		[[nodiscard]] uint32_t getHeight() const { return windowInfo.height; }
 
-	private:
+	protected:
 		WindowInfo windowInfo;
 	};
 }

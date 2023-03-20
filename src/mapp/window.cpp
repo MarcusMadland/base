@@ -8,13 +8,11 @@ namespace mapp
 		windowInfo.title = name;
 		windowInfo.width = width;
 		windowInfo.height = height;
-
-		onInit();
 	}
 
 	Window::~Window()
 	{
-		onShutdown();
+		
 	}
 
 	void Window::setEventCallback(const std::function<void(Event&)>& callback)
