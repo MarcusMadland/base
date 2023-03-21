@@ -1,6 +1,3 @@
-
-
-
 #include "../../include/mapp/event.hpp"
 
 namespace mapp
