@@ -6,7 +6,6 @@
 
 namespace mapp
 {
-	
 	enum class EventType
 	{
 		None,

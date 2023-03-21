@@ -1,5 +1,6 @@
 #include "../../include/mapp/app.hpp"
 #include <chrono>
+#include <iostream>
 
 namespace mapp
 {
@@ -7,18 +8,15 @@ namespace mapp
 		this, std::placeholders::_1)
 	App* App::instance = nullptr;
 
-	App::App(Window* window)
-		: isRunning(true)
+	App::App(Window* window) 
+		: window(window)
+		, layerStack(LayerStack())
+		, isRunning(true)
 		, isMinimized(false)
 		, lastFrameTime(0.0f)
 		, deltaTime(0.0f)
-		, window(window)
+		
 	{
-		if (!instance)
-		{
-			// Initialize core
-			
-		}
 		instance = this;
 
 		if (window) 

@@ -22,23 +22,12 @@ namespace mapp
 		App& operator=(App&&) = delete;
 
 		void run();
-
-		
 		void shutdown();
-
-		
 		void onEvent(Event& e);
-
-		
 		void pushLayer(Layer* layer);
-
-		
 		void pushOverlay(Layer* layer);
 
-		
 		static App& getInstance() { return *instance; }
-
-		
 		[[nodiscard]] Window& getWindow() const { return *window; }
 
 	private:
@@ -46,15 +35,13 @@ namespace mapp
 		bool onWindowResize(const WindowResizeEvent& e);
 
 	private:
-		Window* window; // @todo Raw pointer? why?
-		bool isRunning;
-		bool isMinimized;
-		
-		LayerStack layerStack;
+        static App* instance;
 
+		Window* window; 
+		LayerStack layerStack;
+		bool isRunning;
+        bool isMinimized;
 		float lastFrameTime;
 		float deltaTime;
-
-		static App* instance;
 	};
 }
