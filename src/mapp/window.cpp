@@ -15,5 +15,6 @@ namespace mapp
 	void Window::setEventCallback(const std::function<void(Event&)>& callback)
 	{
 		eventCallback = callback;
-	}
+    }
+
 }

@@ -28,7 +28,7 @@ namespace mapp
 		void pushOverlay(Layer* layer);
 
 		static App& getInstance() { return *instance; }
-		[[nodiscard]] Window& getWindow() const { return *window; }
+		[[nodiscard]] Window* getWindow() const { return window; }
 
 	private:
 		bool onWindowClose(WindowCloseEvent& e);
