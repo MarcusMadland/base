@@ -1,6 +1,9 @@
 # Directories
 **bin/
+**binaries/
 **bin-int/
+**intermediate/
+**obj/
 
 # Files
 *.user
