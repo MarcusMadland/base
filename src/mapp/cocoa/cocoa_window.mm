@@ -10,18 +10,22 @@ namespace mapp
 		: Window(params)
 	{
         
+        
+        
         NSApplication* application = [NSApplication sharedApplication];
                [application setActivationPolicy:NSApplicationActivationPolicyRegular];
         
-               NSWindow* window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,params.width,params.height)
-                                   styleMask:NSWindowStyleMaskTitled |
-                                   NSWindowStyleMaskClosable |
-                                   NSWindowStyleMaskMiniaturizable |
-                                   NSWindowStyleMaskResizable
-                                   
-                                                                backing:NSBackingStoreBuffered defer:NO];
-               
-               [window setTitle:@"My Window"];
+        NSWindow* window = [[NSWindow alloc]            initWithContentRect:NSMakeRect(0,0,params.width,params.height)
+                               styleMask:NSWindowStyleMaskTitled |
+                               (params.canClose    ? NSWindowStyleMaskClosable : 0) |
+                               (params.canMinimize ? NSWindowStyleMaskMiniaturizable : 0) |
+                               (params.canResize   ? NSWindowStyleMaskResizable : 0)
+                           
+                                                        backing:NSBackingStoreBuffered defer:NO];
+        
+        NSString *finalTitle = [NSString stringWithCString:params.title.c_str()
+                                           encoding:[NSString defaultCStringEncoding]];
+               [window setTitle:finalTitle];
                [window center];
                [window makeKeyAndOrderFront:nil];
                
