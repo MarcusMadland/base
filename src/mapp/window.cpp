@@ -1,6 +1,7 @@
 #include "../../include/mapp/window.hpp"
 
 // Platform detection
+#if !defined(CUSTOM_PLATFORM_DETECTION)
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 	#define MAPP_WIN32
 #ifdef _WIN64
@@ -33,6 +34,7 @@
 	//
 #else
 #   error "Unknown compiler"
+#endif
 #endif
 
 // Include correct header depending on platform
