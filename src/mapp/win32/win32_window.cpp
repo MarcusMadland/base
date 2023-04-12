@@ -1,4 +1,4 @@
-#include "../include/mapp/platform-win/window_win.hpp"
+#include "../include/mapp/win32/win32_window.hpp"
 
 #include <iostream>
 #include <stdlib.h>
@@ -21,8 +21,8 @@ namespace mapp
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 
-	WindowWin::WindowWin(const char* name, uint32_t width, uint32_t height)
-		: Window(name, width, height)
+	WindowWin::WindowWin(const WindowParams& params)
+		: Window(params)
 		, className(L"WindowsWindowClass")
 	{
 		// Class
@@ -40,14 +40,14 @@ namespace mapp
 		RECT rect = RECT();
 		rect.left = 250;
 		rect.top = 250;
-		rect.right = rect.left + width;
-		rect.bottom = rect.top + height;
+		rect.right = rect.left + params.width;
+		rect.bottom = rect.top + params.height;
 		AdjustWindowRect(&rect, style, false);
 
 		// Window
-		const size_t len = std::strlen(name) + 1;
+		const size_t len = std::strlen(params.title.c_str()) + 1;
 		wchar_t* windowTitle = new wchar_t[len];
-		std::mbstowcs(windowTitle, name, len);
+		std::mbstowcs(windowTitle, params.title.c_str(), len);
 		window = CreateWindowEx(
 			0,
 			className,

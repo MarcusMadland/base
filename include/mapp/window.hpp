@@ -1,18 +1,31 @@
-
-
-
 #pragma once
-
-#include <memory>
 
 #include "event.hpp"
 
+#include <memory>
+#include <string>
+
 namespace mapp
 {
+	struct WindowParams
+	{
+		std::string title = "mapp window";
+		std::string iconPath = "";
+		uint32_t width = 1280;
+		uint32_t height = 720;
+
+		bool canResize = true;
+		bool canMove = true;
+		bool canClose = true;
+		bool canMaximize = true;
+		bool canMinimize = true;
+		bool canFullscreen = true;
+	};
+
 	class Window
 	{
 	public:
-		Window(const char* name, uint32_t width, uint32_t height);
+		Window(const WindowParams& params);
 		~Window();
 
 		virtual void onUpdate(const float& dt) = 0;
@@ -21,14 +34,13 @@ namespace mapp
 
 		void setEventCallback(const std::function<void(Event&)>& callback);
 
-		[[nodiscard]] const char* getName() const { return name; }
-		[[nodiscard]] uint32_t getWidth() const { return width; }
-		[[nodiscard]] uint32_t getHeight() const { return height; }
+		[[nodiscard]] WindowParams getParams() { return params; }
+
+		static Window* create(const WindowParams& params);
        
 	protected:
-        const char* name;
-        uint32_t width;
-        uint32_t height;
+		WindowParams params;
+
         std::function<void(Event&)> eventCallback;
 	};
 }

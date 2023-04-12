@@ -7,7 +7,7 @@ namespace mapp
 	class WindowMac : public Window
 	{
 	public:
-		WindowMac(const char* name, uint32_t width, uint32_t height);
+		WindowMac(const WindowParams& params);
 		~WindowMac();
 
 		virtual void onUpdate(const float& dt) override;

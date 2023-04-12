@@ -1,12 +1,12 @@
-#include "../include/mapp/platform-mac/window_mac.hpp"
+#include "../include/mapp/cocoa/cocoa_window.hpp"
 
 #include <iostream>
 #include <stdlib.h>
 
 namespace mapp
 {
-	WindowMac::WindowMac(const char* name, uint32_t width, uint32_t height)
-		: Window(name, width, height)
+	WindowMac::WindowMac(const WindowParams& params)
+		: Window(params)
 	{
 		
 	}

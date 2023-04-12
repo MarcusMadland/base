@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include <vector>
-
 #include "event.hpp"
+
+#include <vector>
 
 namespace mapp 
 {
