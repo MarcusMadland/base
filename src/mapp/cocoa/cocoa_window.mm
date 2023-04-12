@@ -1,10 +1,12 @@
+#ifdef MAPP_COCOA
+
 #include "../include/mapp/cocoa/cocoa_window.hpp"
 
 #include <Cocoa/Cocoa.h>
 
 namespace mapp
 {
-	WindowMac::WindowMac(const WindowParams& params)
+	WindowCocoa::WindowCocoa(const WindowParams& params)
 		: Window(params)
 	{
         
@@ -27,21 +29,23 @@ namespace mapp
                [application run];
 	}
 
-	WindowMac::~WindowMac()
+	WindowCocoa::~WindowCocoa()
 	{
 	}
 	
-	void WindowMac::onUpdate(const float& dt)
+	void WindowCocoa::onUpdate(const float& dt)
 	{
 	}
 
-	void* WindowMac::getNativeWindow()
+	void* WindowCocoa::getNativeWindow()
 	{
 		return nullptr;
 	}
 
-	void* WindowMac::getNativeDisplay()
+	void* WindowCocoa::getNativeDisplay()
 	{
 		return nullptr;
 	}
 }
+
+#endif

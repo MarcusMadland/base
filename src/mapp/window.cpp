@@ -1,41 +1,7 @@
 #include "../../include/mapp/window.hpp"
 
-// Platform detection
-#if !defined(CUSTOM_PLATFORM_DETECTION)
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-	#define MAPP_WIN32
-#ifdef _WIN64
-	//
-#else
-	//
-#endif
-
-#elif __APPLE__
-
-#include <TargetConditionals.h>
-#if TARGET_IPHONE_SIMULATOR
-	//
-#elif TARGET_OS_MACCATALYST
-	#define MAPP_COCOA
-#elif TARGET_OS_IPHONE
-	//
-#elif TARGET_OS_MAC
-    #define MAPP_COCOA
-#else
-#   error "Unknown Apple platform"
-#endif
-
-#elif __ANDROID__
-	//
-#elif __linux__
-	//
-#elif __unix__ 
-	//
-#elif defined(_POSIX_VERSION)
-	//
-#else
-#error "Unknown compiler"
-#endif
+#if !defined(MAPP_CUSTOM_PLATFORM_DETECTION)
+// @todo Automatic platform detection
 #endif
 
 // Include correct header depending on platform
@@ -67,7 +33,7 @@ namespace mapp
 	{
 		// Create window depending on platform
 #ifdef MAPP_WIN32
-		return new WindowWin(params);
+		return new WindowWin32(params);
 #endif
         
 #ifdef MAPP_COCOA

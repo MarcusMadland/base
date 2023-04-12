@@ -23,7 +23,7 @@ namespace mapp
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 
-	WindowWin::WindowWin(const WindowParams& params)
+	WindowWin32::WindowWin32(const WindowParams& params)
 		: Window(params)
 		, className(L"WindowsWindowClass")
 	{
@@ -67,12 +67,12 @@ namespace mapp
 		ShowWindow(window, SW_SHOW);
 	}
 
-	WindowWin::~WindowWin()
+	WindowWin32::~WindowWin32()
 	{
 		UnregisterClass(className, instance);
 	}
 
-	bool WindowWin::ProcessMessages()
+	bool WindowWin32::ProcessMessages()
 	{
 		MSG msg = MSG();
 
@@ -90,16 +90,16 @@ namespace mapp
 		return true;
 	}
 
-	void WindowWin::onUpdate(const float& dt)
+	void WindowWin32::onUpdate(const float& dt)
 	{
 	}
 
-	void* WindowWin::getNativeWindow()
+	void* WindowWin32::getNativeWindow()
 	{
 		return window;
 	}
 
-	void* WindowWin::getNativeDisplay()
+	void* WindowWin32::getNativeDisplay()
 	{
 		return nullptr;
 	}

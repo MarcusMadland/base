@@ -20,8 +20,10 @@ project "mapp"
 		"include"
 	}
 
-	links
-	{
-		"Cocoa.framework"
-	}
+	defines { "MAPP_CUSTOM_PLATFORM_DETECTION"}
+
+	filter "system:windows"
+		defines { "MAPP_WIN32" }
+	filter "system:macosx"
+		defines { "MAPP_COCOA" }
 	

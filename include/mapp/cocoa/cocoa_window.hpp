@@ -1,14 +1,16 @@
+#ifdef MAPP_COCOA
+
 #pragma once
 
 #include "../include/mapp/window.hpp"
 
 namespace mapp
 {
-	class WindowMac : public Window
+	class WindowCocoa : public Window
 	{
 	public:
-		WindowMac(const WindowParams& params);
-		~WindowMac();
+		WindowCocoa(const WindowParams& params);
+		~WindowCocoa();
 
 		virtual void onUpdate(const float& dt) override;
 		virtual void* getNativeWindow() override;
@@ -18,3 +20,5 @@ namespace mapp
 
 	};
 }
+
+#endif
