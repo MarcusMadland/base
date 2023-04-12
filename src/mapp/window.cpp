@@ -37,7 +37,7 @@ namespace mapp
 #endif
         
 #ifdef MAPP_COCOA
-		return new WindowMac(params);
+		return new WindowCocoa(params);
 #endif
         
         return nullptr;
