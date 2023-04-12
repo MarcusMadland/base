@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/logo.svg" alt="Logo"/>
+  <img src="docs/images/logo.png" alt="Logo"/>
 </p>
 
 [mapp](https://github.com/MarcusMadland/mapp) - Cross-platform application layer
