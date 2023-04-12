@@ -10,6 +10,8 @@ project "mapp"
 	files
 	{
 		"include/**.hpp",
+		"src/**.mm",
+		"src/*.m",
 		"src/**.cpp",
 	}
 
@@ -17,3 +19,9 @@ project "mapp"
 	{
 		"include"
 	}
+
+	links
+	{
+		"Cocoa.framework"
+	}
+	

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef MAPP_WIN32
+
 #include "../include/mapp/window.hpp"
 
 #include <Windows.h>
@@ -26,3 +28,5 @@ namespace mapp
 		HWND window;
 	};
 }
+
+#endif

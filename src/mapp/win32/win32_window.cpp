@@ -1,3 +1,5 @@
+#ifdef MAPP_WIN32
+
 #include "../include/mapp/win32/win32_window.hpp"
 
 #include <iostream>
@@ -102,3 +104,5 @@ namespace mapp
 		return nullptr;
 	}
 }
+
+#endif

@@ -11,6 +11,7 @@
 #endif
 
 #elif __APPLE__
+
 #include <TargetConditionals.h>
 #if TARGET_IPHONE_SIMULATOR
 	//
@@ -19,7 +20,7 @@
 #elif TARGET_OS_IPHONE
 	//
 #elif TARGET_OS_MAC
-	//
+    #define MAPP_COCOA
 #else
 #   error "Unknown Apple platform"
 #endif
@@ -33,17 +34,17 @@
 #elif defined(_POSIX_VERSION)
 	//
 #else
-#   error "Unknown compiler"
+#error "Unknown compiler"
 #endif
 #endif
 
 // Include correct header depending on platform
 #ifdef MAPP_WIN32
 #include "mapp/win32/win32_window.hpp"
+#endif
 
-#elif MAPP_COCOA
+#ifdef MAPP_COCOA
 #include "mapp/cocoa/cocoa_window.hpp"
-
 #endif
 
 namespace mapp
@@ -67,9 +68,13 @@ namespace mapp
 		// Create window depending on platform
 #ifdef MAPP_WIN32
 		return new WindowWin(params);
-#elif MAPP_COCOA
+#endif
+        
+#ifdef MAPP_COCOA
 		return new WindowMac(params);
 #endif
+        
+        return nullptr;
 	}
 
 }
