@@ -6,9 +6,8 @@
 ============================================================================
 
 [![Windows](https://github.com/MarcusMadland/bgfx-starter/actions/workflows/msbuild.yml/badge.svg)](https://github.com/MarcusMadland/core-renderer/actions/workflows/msbuild.yml)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/90025bd8b78547e8970fe0078e091712)](https://www.codacy.com/gh/MarcusMadland/core/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MarcusMadland/core&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/6560928843d0431f8f34553ae82fa68d)](https://app.codacy.com/gh/MarcusMadland/mapp/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Apache License 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/MarcusMadland/core-renderer/blob/main/LICENSE)
-<!---[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3e53db5c141c4b2e97f62592e7505899)](https://www.codacy.com/gh/MarcusMadland/core-renderer/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MarcusMadland/core-renderer&amp;utm_campaign=Badge_Grade)--->
 
 A simple cross platform application layer for handling window, event and input OS tasks.
 
