@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "../include/mapp/window.hpp"
-
 #include <Windows.h>
+
+#include "../include/mapp/window.hpp"
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -15,8 +15,6 @@ namespace mapp
 	public:
 		WindowWin32(const WindowParams& params);
 		~WindowWin32();
-
-		bool ProcessMessages();
 
 		virtual void onUpdate(const float& dt) override;
 		virtual void* getNativeWindow() override;

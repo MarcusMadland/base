@@ -2,8 +2,6 @@
 
 #include "../include/mapp/cocoa/cocoa_window.hpp"
 
-#include <Cocoa/Cocoa.h>
-
 namespace mapp
 {
 	WindowCocoa::WindowCocoa(const WindowParams& params)
@@ -17,10 +15,10 @@ namespace mapp
         
         NSWindow* window = [[NSWindow alloc]            initWithContentRect:NSMakeRect(0,0,params.width,params.height)
                                styleMask:NSWindowStyleMaskTitled |
+
                                (params.canClose    ? NSWindowStyleMaskClosable : 0) |
-                               (params.canMinimize ? NSWindowStyleMaskMiniaturizable : 0) |
                                (params.canResize   ? NSWindowStyleMaskResizable : 0)
-                           
+                              
                                                         backing:NSBackingStoreBuffered defer:NO];
         
         NSString *finalTitle = [NSString stringWithCString:params.title.c_str()

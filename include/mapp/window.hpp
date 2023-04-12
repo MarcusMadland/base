@@ -15,11 +15,7 @@ namespace mapp
 		uint32_t height = 720;
 
 		bool canResize = true;
-		bool canMove = true;
 		bool canClose = true;
-		bool canMaximize = true;
-		bool canMinimize = true;
-		bool canFullscreen = true;
 	};
 
 	class Window

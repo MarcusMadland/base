@@ -38,7 +38,11 @@ namespace mapp
 		RegisterClass(&windowClass);
 
 		// Size & Style
-		DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
+		DWORD style = WS_CAPTION | WS_SYSMENU |
+			(params.canClose ? 0 : 0) |
+			(params.canResize ? WS_MAXIMIZEBOX : 0) |
+			(params.canResize ? WS_MINIMIZEBOX : 0) |
+			(params.canResize ? WS_SIZEBOX : 0);
 		RECT rect = RECT();
 		rect.left = 250;
 		rect.top = 250;
@@ -72,26 +76,26 @@ namespace mapp
 		UnregisterClass(className, instance);
 	}
 
-	bool WindowWin32::ProcessMessages()
+	void WindowWin32::onUpdate(const float& dt)
 	{
 		MSG msg = MSG();
 
 		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
-			if (msg.message = WM_QUIT)
+			if (msg.message == WM_CLOSE && params.canClose)
 			{
-				return false;
+				mapp::WindowCloseEvent event;
+				eventCallback(event);
+			}
+			if (msg.message == WM_SIZE && params.canResize)
+			{
+				mapp::WindowResizeEvent event = mapp::WindowResizeEvent(0,0);
+				eventCallback(event);
 			}
 
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		}
-
-		return true;
-	}
-
-	void WindowWin32::onUpdate(const float& dt)
-	{
 	}
 
 	void* WindowWin32::getNativeWindow()
