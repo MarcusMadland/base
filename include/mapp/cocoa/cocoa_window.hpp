@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <Cocoa/Cocoa.h>
-
 #include "../include/mapp/window.hpp"
 
 namespace mapp
@@ -19,7 +17,7 @@ namespace mapp
 		virtual void* getNativeDisplay() override;
 
 	private:
-		NSWindow* window;
+        
 	};
 }
 
