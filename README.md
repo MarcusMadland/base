@@ -29,9 +29,9 @@ Supported platforms:
 
  * Windows (Win32)
  * MacOS (cocoa)
- * Linux **[not yet]**
- * Android **[not yet]**
- * IOS **[not yet]**
+ * Linux 
+ * Android 
+ * IOS 
  
  [Building](https://github.com/MarcusMadland/mapp)
 -------------------------------------------------------------
