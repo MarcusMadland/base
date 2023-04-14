@@ -23,7 +23,7 @@ project "mapp"
 	defines { "MAPP_CUSTOM_PLATFORM_DETECTION"}
 
 	filter "system:windows"
-		defines { "MAPP_WIN32" }
+		defines { "MAPP_PLATFORM_WIN32" }
 	filter "system:macosx"
-		defines { "MAPP_COCOA" }
+		defines { "MAPP_PLATFORM_COCOA" }
 	

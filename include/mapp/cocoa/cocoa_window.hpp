@@ -1,4 +1,4 @@
-#ifdef MAPP_COCOA
+#ifdef MAPP_PLATFORM_COCOA
 
 #pragma once
 

@@ -1,4 +1,4 @@
-#ifdef MAPP_WIN32
+#ifdef MAPP_PLATFORM_WIN32
 
 #pragma once
 
@@ -17,6 +17,9 @@ namespace mapp
 		~WindowWin32();
 
 		virtual void onUpdate(const float& dt) override;
+
+		virtual bool setFullscreen(const bool enable) override;
+
 		virtual void* getNativeWindow() override;
 		virtual void* getNativeDisplay() override;
 

@@ -16,6 +16,8 @@ namespace mapp
 
 		bool canResize = true;
 		bool canClose = true;
+
+		bool showBorder = true;
 	};
 
 	class Window
@@ -25,7 +27,10 @@ namespace mapp
 		~Window();
 
 		virtual void onUpdate(const float& dt) = 0;
-        virtual void* getNativeWindow() = 0; 
+       
+		virtual bool setFullscreen(const bool enable) = 0;
+
+		virtual void* getNativeWindow() = 0;
 		virtual void* getNativeDisplay() = 0;
 
 		void setEventCallback(const std::function<void(Event&)>& callback);
@@ -34,9 +39,10 @@ namespace mapp
 
 		static Window* create(const WindowParams& params);
        
+	public:
+		std::function<void(Event&)> eventCallback;
+
 	protected:
 		WindowParams params;
-
-        std::function<void(Event&)> eventCallback;
 	};
 }

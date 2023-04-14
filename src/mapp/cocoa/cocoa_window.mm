@@ -1,4 +1,4 @@
-#ifdef MAPP_COCOA
+#ifdef MAPP_PLATFORM_COCOA
 
 #include "../include/mapp/cocoa/cocoa_window.hpp"
 

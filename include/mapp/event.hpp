@@ -15,7 +15,7 @@ namespace mapp
 
 		KeyPressed,
 		KeyReleased,
-		KeyTyped,
+		KeyPressing,
 
 		MouseMoved,
 		MouseScrolled,
@@ -95,41 +95,36 @@ namespace mapp
 	class KeyEvent : public Event
 	{
 	public:
-		explicit KeyEvent(int code);
+		explicit KeyEvent(uint64_t code);
 
-		[[nodiscard]] int getKeyCode() const { return keyCode; }
+		[[nodiscard]] uint64_t getKeyCode() const { return keyCode; }
 
 	private:
-		int keyCode;
+		uint64_t keyCode;
 	};
 	
 	class KeyPressedEvent final : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(const int code, const int repeatCount);
-
-		[[nodiscard]] int getRepeatCount() const { return repeatCount; }
+		KeyPressedEvent(const uint64_t code);
 
 		EVENT_CLASS_TYPE(KeyPressed)
-
-	private:
-		int repeatCount;
 	};
 	
 	class KeyReleasedEvent final : public KeyEvent
 	{
 	public:
-		explicit KeyReleasedEvent(const int code);
+		explicit KeyReleasedEvent(const uint64_t code);
 
 		EVENT_CLASS_TYPE(KeyReleased)
 	};
-	
-	class KeyTypedEvent final : public KeyEvent
+
+	class KeyPressingEvent final : public KeyEvent
 	{
 	public:
-		explicit KeyTypedEvent(const int keycode);
+		KeyPressingEvent(const uint64_t code);
 
-		EVENT_CLASS_TYPE(KeyTyped)
+		EVENT_CLASS_TYPE(KeyPressing)
 	};
 
 	class MouseMovedEvent final : public Event
@@ -163,18 +158,18 @@ namespace mapp
 	class MouseButtonEvent : public Event
 	{
 	public:
-		explicit MouseButtonEvent(const int button);
+		explicit MouseButtonEvent(const uint64_t button);
 		
-		[[nodiscard]] int getMouseButton() const { return button; }
+		[[nodiscard]] uint64_t getMouseButton() const { return button; }
 	
 	private:
-		int button;
+		uint64_t button;
 	};
 	
 	class MouseButtonPressedEvent final : public MouseButtonEvent
 	{
 	public:
-		explicit MouseButtonPressedEvent(const int button);
+		explicit MouseButtonPressedEvent(const uint64_t button);
 
 		EVENT_CLASS_TYPE(MouseButtonPressed)
 	};
@@ -182,7 +177,7 @@ namespace mapp
 	class MouseButtonReleasedEvent final : public MouseButtonEvent
 	{
 	public:
-		explicit MouseButtonReleasedEvent(const int button);
+		explicit MouseButtonReleasedEvent(const uint64_t button);
 
 		EVENT_CLASS_TYPE(MouseButtonReleased)
 	};

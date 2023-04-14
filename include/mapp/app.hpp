@@ -28,6 +28,7 @@ namespace mapp
 		void pushOverlay(Layer* layer);
 
 		static App& getInstance() { return *instance; }
+		static bool isValid() { return instance; }
 		[[nodiscard]] Window* getWindow() const { return window; }
 
 	private:
@@ -40,7 +41,7 @@ namespace mapp
 		Window* window; 
 		LayerStack layerStack;
 		bool isRunning;
-        bool isMinimized;
+
 		float lastFrameTime;
 		float deltaTime;
 	};

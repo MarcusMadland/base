@@ -10,20 +10,20 @@ namespace mapp
 		: width(width), height(height)
 	{}
 
-	KeyEvent::KeyEvent(const int code)
+	KeyEvent::KeyEvent(const uint64_t code)
 		 : keyCode(code)
 	{}
 
-	KeyPressedEvent::KeyPressedEvent(const int code, const int repeatCount)
-		: KeyEvent(code), repeatCount(repeatCount)
-	{}
-
-	KeyReleasedEvent::KeyReleasedEvent(const int code)
+	KeyPressedEvent::KeyPressedEvent(const uint64_t code)
 		: KeyEvent(code)
 	{}
 
-	KeyTypedEvent::KeyTypedEvent(const int keycode)
-		: KeyEvent(keycode)
+	KeyReleasedEvent::KeyReleasedEvent(const uint64_t code)
+		: KeyEvent(code)
+	{}
+
+	KeyPressingEvent::KeyPressingEvent(const uint64_t code)
+		: KeyEvent(code)
 	{}
 	
 	MouseMovedEvent::MouseMovedEvent(const float x, const float y)
@@ -34,16 +34,18 @@ namespace mapp
 		: offsetX(xOffset), offsetY(yOffset)
 	{}
 
-	MouseButtonEvent::MouseButtonEvent(const int button)
+	MouseButtonEvent::MouseButtonEvent(const uint64_t button)
 		: button(button)
 	{}
 
-	MouseButtonPressedEvent::MouseButtonPressedEvent(const int button)
+	MouseButtonPressedEvent::MouseButtonPressedEvent(const uint64_t button)
 		: MouseButtonEvent(button)
 	{}
 	
-	MouseButtonReleasedEvent::MouseButtonReleasedEvent(const int button)
+	MouseButtonReleasedEvent::MouseButtonReleasedEvent(const uint64_t button)
 		: MouseButtonEvent(button)
 	{}
 	
+
+
 }

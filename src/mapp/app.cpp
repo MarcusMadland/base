@@ -12,7 +12,6 @@ namespace mapp
 		: window(window)
 		, layerStack(LayerStack())
 		, isRunning(true)
-		, isMinimized(false)
 		, lastFrameTime(0.0f)
 		, deltaTime(0.0f)
 		
@@ -41,23 +40,22 @@ namespace mapp
 		{
 			const auto start = std::chrono::high_resolution_clock::now(); 
 
-			if (!isMinimized)
+			
+			for (Layer* layer : layerStack)
 			{
-				for (Layer* layer : layerStack)
-				{
-					layer->onUpdate(deltaTime);
-				}
-
-				if (window)
-				{
-					window->onUpdate(deltaTime);
-				}
-
-				for (Layer* layer : layerStack)
-				{
-					layer->onPostUpdate(deltaTime);
-				}
+				layer->onUpdate(deltaTime);
 			}
+
+			if (window)
+			{
+				window->onUpdate(deltaTime);
+			}
+
+			for (Layer* layer : layerStack)
+			{
+				layer->onPostUpdate(deltaTime);
+			}
+			
 
 			const auto end = std::chrono::high_resolution_clock::now();
 			const std::chrono::duration<float> duration = end - start;
@@ -98,7 +96,6 @@ namespace mapp
 
 	bool App::onWindowResize(const WindowResizeEvent& e)
 	{
-		isMinimized = (e.getWidth() == 0 || e.getHeight() == 0);
 		return false;
 	}
 }
