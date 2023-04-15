@@ -71,7 +71,6 @@ namespace mapp
 		{
 			isRunning = false;
 		}
-		delete window;
 	}
 
 	void App::onEvent(Event& e)
