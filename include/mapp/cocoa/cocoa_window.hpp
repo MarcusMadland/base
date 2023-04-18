@@ -13,6 +13,9 @@ namespace mapp
 		~WindowCocoa();
 
 		virtual void onUpdate(const float& dt) override;
+        
+        virtual bool setFullscreen(const bool enable) override;
+        
 		virtual void* getNativeWindow() override;
 		virtual void* getNativeDisplay() override;
 
