@@ -27,15 +27,14 @@ MAPP is a cross platform application library that will take care of os tasks to 
 
 Supported platforms:
 
-* Windows (Win32)
-* MacOS (cocoa)
+* **Windows** (Win32)
+* **MacOS** (cocoa)
+* Linux soon
+* Android soon
+* IOS soon
 
+MAPP also supports **gamepad** on desktop devices. soon
 
-Planned platforms:
-
-* Linux 
-* Android 
-* IOS 
  
  [Building](https://github.com/MarcusMadland/mapp)
 -------------------------------------------------------------
@@ -48,9 +47,11 @@ git clone https://github.com/MarcusMadland/mapp.git
 
 then 
 
+
  [Examples](https://github.com/MarcusMadland/mapp)
 -------------------------------------------------------------
 blabla
+
 
 [License ( Apache 2 )](LICENSE)
 -----------------------------------------------------------------------
