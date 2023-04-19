@@ -9,7 +9,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6560928843d0431f8f34553ae82fa68d)](https://app.codacy.com/gh/MarcusMadland/mapp/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Apache License 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/MarcusMadland/core-renderer/blob/main/LICENSE)
 
-A simple cross platform application layer for handling window, event and input OS tasks.
+A simple application layer for handling window, event and input across multiple platforms.
 
 <p align="center">
     <a href="#what-is-it">What is it?</a> -
@@ -23,12 +23,16 @@ A simple cross platform application layer for handling window, event and input O
 [What is it?](https://github.com/MarcusMadland/mapp)
 -------------------------------------------------------------
 
-MAPP is a cross platform application library that will take care of os tasks to create window, events, and input. It also takes care of basic application structure such as a application class and a layerstack. It's light weight and does nothing more or nothing less than whats stated above.
+MAPP is a cross platform application library that will take care of os tasks to create window, events, and input. It also takes care of basic application structure such as a application class and a layerstack. It's light weight and does nothing more or nothing less.
 
 Supported platforms:
 
 * Windows (Win32)
 * MacOS (cocoa)
+
+
+Planned platforms:
+
 * Linux 
 * Android 
 * IOS 
@@ -43,6 +47,10 @@ git clone https://github.com/MarcusMadland/mapp.git
 ```
 
 then 
+
+ [Examples](https://github.com/MarcusMadland/mapp)
+-------------------------------------------------------------
+blabla
 
 [License ( Apache 2 )](LICENSE)
 -----------------------------------------------------------------------
