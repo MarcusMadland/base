@@ -6,8 +6,6 @@
 
 #include "../include/mapp/window.hpp"
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 namespace mapp
 {
 	class WindowWin32 : public Window
@@ -19,6 +17,7 @@ namespace mapp
 		virtual void onUpdate(const float& dt) override;
 
 		virtual bool setFullscreen(const bool enable) override;
+		virtual bool isGamepadConnected() override;
 
 		virtual void* getNativeWindow() override;
 		virtual void* getNativeDisplay() override;

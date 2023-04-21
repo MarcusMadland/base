@@ -17,6 +17,14 @@ namespace mapp
 		KeyReleased,
 		KeyPressing,
 
+		GamepadKeyPressed,
+		GamepadKeyReleased,
+		GamepadKeyPressing,
+		GamepadLeftJoystick,
+		GamepadRightJoystick,
+		GamepadLeftTrigger,
+		GamepadRightTrigger,
+
 		MouseMoved,
 		MouseScrolled,
 		MouseButtonPressed,
@@ -103,6 +111,7 @@ namespace mapp
 		uint64_t keyCode;
 	};
 	
+	// Key
 	class KeyPressedEvent final : public KeyEvent
 	{
 	public:
@@ -127,6 +136,112 @@ namespace mapp
 		EVENT_CLASS_TYPE(KeyPressing)
 	};
 
+	// Gamepad
+	class GamepadKeyPressedEvent final : public KeyEvent
+	{
+	public:
+		GamepadKeyPressedEvent(const uint64_t code, const int id);
+
+		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+
+		EVENT_CLASS_TYPE(GamepadKeyPressed)
+	private:
+		int ControllerIndex;
+	};
+
+	class GamepadKeyReleasedEvent final : public KeyEvent
+	{
+	public:
+		explicit GamepadKeyReleasedEvent(const uint64_t code, const int id);
+
+		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+
+		EVENT_CLASS_TYPE(GamepadKeyReleased)
+
+	private:
+		int ControllerIndex;
+	};
+
+	class GamepadKeyPressingEvent final : public KeyEvent
+	{
+	public:
+		GamepadKeyPressingEvent(const uint64_t code, const int id);
+
+		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+
+		EVENT_CLASS_TYPE(GamepadKeyPressing)
+
+	private:
+		int ControllerIndex;
+	};
+
+	class GamepadLeftJoystickEvent final : public Event
+	{
+	public:
+		GamepadLeftJoystickEvent(const float x, const float y, const int id);
+
+		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+
+		[[nodiscard]] float getX() const { return axisX; }
+		[[nodiscard]] float getY() const { return axisY; }
+
+		EVENT_CLASS_TYPE(GamepadLeftJoystick)
+
+	private:
+		int ControllerIndex;
+		float axisX, axisY;
+	};
+
+	class GamepadRightJoystickEvent final : public Event
+	{
+	public:
+		GamepadRightJoystickEvent(const float x, const float y, const int id);
+
+		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+
+		[[nodiscard]] float getX() const { return axisX; }
+		[[nodiscard]] float getY() const { return axisY; }
+
+		EVENT_CLASS_TYPE(GamepadRightJoystick)
+
+	private:
+		int ControllerIndex;
+		float axisX, axisY;
+	};
+
+	class GamepadLeftTriggerEvent final : public Event
+	{
+	public:
+		GamepadLeftTriggerEvent(const float x, const int id);
+
+		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+
+		[[nodiscard]] float getX() const { return axisX; }
+
+		EVENT_CLASS_TYPE(GamepadLeftTrigger)
+
+	private:
+		int ControllerIndex;
+		float axisX;
+	};
+
+	class GamepadRightTriggerEvent final : public Event
+	{
+	public:
+		GamepadRightTriggerEvent(const float x, const int id);
+
+		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+
+		[[nodiscard]] float getX() const { return axisX; }
+
+		EVENT_CLASS_TYPE(GamepadRightTrigger)
+
+	private:
+		int ControllerIndex;
+		float axisX;
+	};
+
+	// Mouse
 	class MouseMovedEvent final : public Event
 	{
 	public:

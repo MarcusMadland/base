@@ -25,7 +25,38 @@ namespace mapp
 	KeyPressingEvent::KeyPressingEvent(const uint64_t code)
 		: KeyEvent(code)
 	{}
+
+	GamepadKeyPressedEvent::GamepadKeyPressedEvent(const uint64_t code, const int id)
+		: KeyEvent(code), ControllerIndex(id)
+	{
+	}
+
+	GamepadKeyReleasedEvent::GamepadKeyReleasedEvent(const uint64_t code, const int id)
+		: KeyEvent(code), ControllerIndex(id)
+	{
+	}
+
+	GamepadKeyPressingEvent::GamepadKeyPressingEvent(const uint64_t code, const int id)
+		: KeyEvent(code), ControllerIndex(id)
+	{
+	}
+
+	GamepadLeftJoystickEvent::GamepadLeftJoystickEvent(const float x, const float y, const int id)
+		: axisX(x), axisY(y), ControllerIndex(id)
+	{}
+
+	GamepadRightJoystickEvent::GamepadRightJoystickEvent(const float x, const float y, const int id)
+		: axisX(x), axisY(y), ControllerIndex(id)
+	{}
 	
+	GamepadLeftTriggerEvent::GamepadLeftTriggerEvent(const float x, const int id)
+		: axisX(x), ControllerIndex(id)
+	{}
+
+	GamepadRightTriggerEvent::GamepadRightTriggerEvent(const float x, const int id)
+		: axisX(x), ControllerIndex(id)
+	{}
+
 	MouseMovedEvent::MouseMovedEvent(const float x, const float y)
 		 : mouseX(x), mouseY(y)
 	{}
@@ -45,7 +76,7 @@ namespace mapp
 	MouseButtonReleasedEvent::MouseButtonReleasedEvent(const uint64_t button)
 		: MouseButtonEvent(button)
 	{}
-	
 
+	
 
 }
