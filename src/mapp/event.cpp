@@ -61,8 +61,8 @@ namespace mapp
 		 : mouseX(x), mouseY(y)
 	{}
 
-	MouseScrolledEvent::MouseScrolledEvent(const float xOffset, const float yOffset)
-		: offsetX(xOffset), offsetY(yOffset)
+	MouseScrolledEvent::MouseScrolledEvent(const float yOffset)
+		: offsetY(yOffset)
 	{}
 
 	MouseButtonEvent::MouseButtonEvent(const uint64_t button)

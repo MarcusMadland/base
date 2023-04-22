@@ -1,11 +1,7 @@
 #include "../../include/mapp/window.hpp"
+#include "../../include/mapp/platform.hpp"
 
-#if !defined(MAPP_CUSTOM_PLATFORM_DETECTION)
-// @todo Automatic platform detection
-#error "Define MAPP_CUSTOM_PLATFORM_DETECTION and a MAPP_PLATFORM_<PLATFORM> in your build system. For supported <PLATFORM> examples look below or in premake file"
-#endif
-
-// Include correct header depending on platform
+// Include window class corresponding to correct platform
 #ifdef MAPP_PLATFORM_WIN32
 #include "mapp/win32/win32_window.hpp"
 #endif

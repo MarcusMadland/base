@@ -259,15 +259,14 @@ namespace mapp
 	class MouseScrolledEvent final : public Event
 	{
 	public:
-		MouseScrolledEvent(const float xOffset, const float yOffset);
+		MouseScrolledEvent(const float yOffset);
 
-		[[nodiscard]] float getXOffset() const { return offsetX; }
 		[[nodiscard]] float getYOffset() const { return offsetY; }
 
 		EVENT_CLASS_TYPE(MouseScrolled)
 		
 	private:
-		float offsetX, offsetY;
+		float offsetY;
 	};
 	
 	class MouseButtonEvent : public Event

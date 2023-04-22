@@ -1,3 +1,5 @@
+#include "../include/mapp/platform.hpp"
+
 #ifdef MAPP_PLATFORM_WIN32
 
 #pragma once

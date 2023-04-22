@@ -1,3 +1,5 @@
+#include "../include/mapp/platform.hpp"
+
 #ifdef MAPP_PLATFORM_WIN32
 
 #include "../include/mapp/win32/win32_window.hpp"
@@ -6,8 +8,10 @@
 #include <windowsx.h>
 #include <Xinput.h>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 
+// @todo Should be parameters for the user right?
 #define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
 #define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
 #define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    30
@@ -149,7 +153,15 @@ namespace mapp
 			{
 				if (App::isValid())
 				{
-					mapp::MouseScrolledEvent event = mapp::MouseScrolledEvent(0.0f, GET_WHEEL_DELTA_WPARAM(wParam));
+					float inMin = -120.0f;
+					float inMax = 120.0f;
+					float outMin = -1.0f;
+					float outMax = 1.0f;
+
+					// Map the input values so they will be from -1 to 1 instead of inMin to inMax
+					float x = ((float)GET_WHEEL_DELTA_WPARAM(wParam) - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+
+					mapp::MouseScrolledEvent event = mapp::MouseScrolledEvent(x);
 					App::getInstance().getWindow()->eventCallback(event);
 				}
 
@@ -166,22 +178,77 @@ namespace mapp
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 
+	std::string GetLastErrorAsString()
+	{
+		//Get the error message ID, if any.
+		DWORD errorMessageID = ::GetLastError();
+		if (errorMessageID == 0) {
+			return std::string(); //No error message has been recorded
+		}
+
+		LPSTR messageBuffer = nullptr;
+
+		//Ask Win32 to give us the string version of that message ID.
+		//The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
+		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+		//Copy the error message into a std::string.
+		std::string message(messageBuffer, size);
+
+		//Free the Win32's string's buffer.
+		LocalFree(messageBuffer);
+
+		return message;
+	}
+
 	WindowWin32::WindowWin32(const WindowParams& params)
 		: Window(params)
 		, className(L"WindowsWindowClass")
 	{
+		// Instance
+		instance = GetModuleHandle(0);
+
+		// Icon @todo
+		/*
+		HICON hIcon = nullptr;
+
+		if (!params.iconPath.empty())
+		{
+			// Load Icon
+			const size_t len = params.iconPath.length() + 1;
+			wchar_t* iconPath = new wchar_t[len];
+			std::mbstowcs(iconPath, params.iconPath.c_str(), len);
+
+			hIcon = (HICON)LoadImage(
+				instance,
+				iconPath,
+				IMAGE_ICON,
+				0,
+				0,
+				LR_LOADFROMFILE
+			);
+		}*/
+
 		// Class
-		instance = GetModuleHandle(nullptr);
-		WNDCLASS windowClass = WNDCLASS();
+		WNDCLASSEX windowClass = WNDCLASSEX();
 		windowClass.lpszClassName = className;
 		windowClass.hInstance = instance;
 		windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-		windowClass.hIcon = LoadIcon(NULL, IDI_WINLOGO);
 		windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+		windowClass.cbSize = sizeof(WNDCLASSEX);
+		windowClass.cbClsExtra = 0;
+		windowClass.cbWndExtra = WS_EX_NOPARENTNOTIFY;
 		windowClass.lpfnWndProc = WindowProc; 
-		windowClass.style = (params.canClose ? 0 : CS_NOCLOSE);
-		RegisterClass(&windowClass);
-
+		windowClass.style = CS_HREDRAW | CS_VREDRAW | (params.canClose ? 0 : CS_NOCLOSE);
+		windowClass.hIcon = NULL;
+		windowClass.hIconSm = NULL;
+		
+		if (!RegisterClassEx(&windowClass))
+		{
+			std::cout << GetLastErrorAsString().c_str() << std::endl;
+		}
+		
 		// Size & Style
 		DWORD style = 
 			WS_CAPTION | WS_SYSMENU |
@@ -197,7 +264,7 @@ namespace mapp
 		AdjustWindowRect(&rect, style, false);
 
 		// Window
-		const size_t len = std::strlen(params.title.c_str()) + 1;
+		const size_t len = params.title.length() + 1;
 		wchar_t* windowTitle = new wchar_t[len];
 		std::mbstowcs(windowTitle, params.title.c_str(), len);
 		window = CreateWindowEx(
@@ -218,6 +285,7 @@ namespace mapp
 		{
 			SetWindowLong(window, GWL_STYLE, 0);
 		}
+
 		ShowWindow(window, SW_SHOW);
 	}
 
