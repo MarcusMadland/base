@@ -209,27 +209,6 @@ namespace mapp
 		// Instance
 		instance = GetModuleHandle(0);
 
-		// Icon @todo
-		/*
-		HICON hIcon = nullptr;
-
-		if (!params.iconPath.empty())
-		{
-			// Load Icon
-			const size_t len = params.iconPath.length() + 1;
-			wchar_t* iconPath = new wchar_t[len];
-			std::mbstowcs(iconPath, params.iconPath.c_str(), len);
-
-			hIcon = (HICON)LoadImage(
-				instance,
-				iconPath,
-				IMAGE_ICON,
-				0,
-				0,
-				LR_LOADFROMFILE
-			);
-		}*/
-
 		// Class
 		WNDCLASSEX windowClass = WNDCLASSEX();
 		windowClass.lpszClassName = className;

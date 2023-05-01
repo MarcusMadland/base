@@ -1,4 +1,4 @@
-#include "../include/mapp/platform.hpp"
+#include "../platform.hpp"
 
 #ifdef MAPP_PLATFORM_WIN32
 

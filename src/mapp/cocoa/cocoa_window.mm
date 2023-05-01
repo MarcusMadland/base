@@ -1,3 +1,5 @@
+#include "../include/mapp/platform.hpp"
+
 #ifdef MAPP_PLATFORM_COCOA
 
 #include "../include/mapp/cocoa/cocoa_window.hpp"

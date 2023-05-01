@@ -10,7 +10,6 @@ namespace mapp
 	struct WindowParams
 	{
 		std::string title = "mapp window";
-		std::string iconPath = "";
 		uint32_t width = 1280;
 		uint32_t height = 720;
 

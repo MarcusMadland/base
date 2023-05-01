@@ -1,3 +1,5 @@
+#include "../platform.hpp"
+
 #ifdef MAPP_PLATFORM_COCOA
 
 #pragma once
