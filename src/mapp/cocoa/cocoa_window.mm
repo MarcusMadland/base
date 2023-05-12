@@ -5,10 +5,10 @@
 #include "../include/mapp/cocoa/cocoa_window.hpp"
 #include "../include/mapp/app.hpp"
 
-#include <stdint.h>
+//#include <stdint.h>
 
 #import <Cocoa/Cocoa.h>
-#import <CoreGraphics/CoreGraphics.h>
+//#import <CoreGraphics/CoreGraphics.h>
 
 void* window = nullptr;
 void* view = nullptr;

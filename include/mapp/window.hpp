@@ -28,7 +28,6 @@ namespace mapp
 		virtual void onUpdate(const float& dt) = 0;
        
 		virtual bool setFullscreen(const bool enable) = 0;
-		virtual bool isGamepadConnected() = 0;
 
 		virtual void* getNativeWindow() = 0;
 		virtual void* getNativeDisplay() = 0;

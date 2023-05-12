@@ -21,13 +21,18 @@ project "mapp"
 		"include"
 	}
 
-	defines { "MAPP_CUSTOM_PLATFORM_DETECTION"}
-
-	filter "system:windows"
-		defines { "MAPP_PLATFORM_WIN32" }
+	if os.target() == "windows" then
+		defines { "MAPP_CUSTOM_PLATFORM_DETECTION", "MAPP_PLATFORM_WIN32", "TEST_LINKING" }
 		links { "Xinput9_1_0" }
-	filter "system:macosx"
-		defines { "MAPP_PLATFORM_COCOA" }
+		printf("Windows")
+
+	elseif os.target() == "macosx" then
+		defines { "MAPP_CUSTOM_PLATFORM_DETECTION", "MAPP_PLATFORM_COCOA", "TEST_LINKING" }
 		links { "Cocoa.framework", "QuartzCore.framework", "Metal.framework", 
 			 -- "IOKit.framework", "CoreVideo.framework" 
 		}
+		printf("Macosx")
+
+	else
+		printf("Unable to find os.target()")
+	end
