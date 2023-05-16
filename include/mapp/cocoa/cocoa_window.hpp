@@ -17,12 +17,10 @@ namespace mapp
 		virtual void onUpdate(const float& dt) override;
         
         virtual bool setFullscreen(const bool enable) override;
+		virtual bool getIsFullscreen() override;
         
 		virtual void* getNativeWindow() override;
 		virtual void* getNativeDisplay() override;
-
-	private:
-        
 	};
 }
 

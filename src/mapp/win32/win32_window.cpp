@@ -205,6 +205,7 @@ namespace mapp
 	WindowWin32::WindowWin32(const WindowParams& params)
 		: Window(params)
 		, className(L"WindowsWindowClass")
+		, isFullscreen(false)
 	{
 		// Instance
 		instance = GetModuleHandle(0);
@@ -452,13 +453,14 @@ namespace mapp
 			ShowWindow(window, SW_RESTORE);
 		}
 
+		isFullscreen = enable;
+
 		return isChangeSuccessful;
 	}
 
-	bool WindowWin32::isGamepadConnected()
+	bool WindowWin32::getIsFullscreen()
 	{
-
-		return false;
+		return isFullscreen;
 	}
 
 	void* WindowWin32::getNativeWindow()

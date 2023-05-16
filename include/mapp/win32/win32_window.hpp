@@ -19,7 +19,7 @@ namespace mapp
 		virtual void onUpdate(const float& dt) override;
 
 		virtual bool setFullscreen(const bool enable) override;
-		virtual bool isGamepadConnected() override;
+		virtual bool getIsFullscreen() override;
 
 		virtual void* getNativeWindow() override;
 		virtual void* getNativeDisplay() override;
@@ -28,6 +28,7 @@ namespace mapp
 		const wchar_t* className;
 		HINSTANCE instance;
 		HWND window;
+		bool isFullscreen;
 	};
 }
 

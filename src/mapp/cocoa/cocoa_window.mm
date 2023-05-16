@@ -216,6 +216,11 @@ namespace mapp
         return false;
     }
 
+    bool WindowCocoa::getIsFullscreen()
+    {
+        return isFullscreen;
+    }
+
 	void* WindowCocoa::getNativeWindow()
 	{
 		return window;
