@@ -1,11 +1,10 @@
 project "mapp"
 	kind "StaticLib"
 	language "C++"
-	cppdialect "C++17"
-	staticruntime "off"
-
-	targetdir ("binaries/" .. "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}" .. "/%{prj.name}")
-	objdir ("intermediate/" .. "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}" .. "/%{prj.name}")
+	cppdialect "C++14"
+	exceptionhandling "Off"
+	rtti "Off"
+	defines "__STDC_FORMAT_MACROS"
 
 	files
 	{
@@ -17,43 +16,35 @@ project "mapp"
 
 	includedirs
 	{
-		"include"
+		"include",
 	}
 
-	if os.target() == "windows" then
+	filter "system:windows"
 		defines 
 		{ 
 			"MAPP_CUSTOM_PLATFORM_DETECTION", 
-			"MAPP_PLATFORM_WIN32", 
-			"TEST_LINKING" 
+			"MAPP_PLATFORM_WIN32",
 		}
 		links 
 		{ 
-			"Xinput9_1_0" 
+			"Xinput9_1_0", 
 		}
+	filter ""
 
-		printf("Completed MAPP [Windows]")
-
-	elseif os.target() == "macosx" then
+	filter "system:macosx"
 		defines 
 		{ 
 			"MAPP_CUSTOM_PLATFORM_DETECTION", 
-			"MAPP_PLATFORM_COCOA", 
-			"TEST_LINKING" 
+			"MAPP_PLATFORM_COCOA",
 		}
 		links 
 		{ 
 			"Cocoa.framework", 
 			"QuartzCore.framework", 
-			"Metal.framework", 
-			 -- "IOKit.framework", 
-			 -- "CoreVideo.framework" 
+			"Metal.framework",
 		}
-		buildoptions {"-F /Library/Frameworks", "-F ~/Library/Frameworks"}
-        linkoptions {"-F /Library/Frameworks", "-F ~/Library/Frameworks"}
-
-		printf("Completed MAPP [MacOSX]")
-
-	else
-		printf("Unable to find os.target()")
-	end
+		buildoptions 
+		{ 
+			"-x objective-c++", 
+		}
+	filter ""

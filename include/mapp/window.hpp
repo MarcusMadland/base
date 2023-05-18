@@ -29,7 +29,7 @@ namespace mapp
        
 		virtual bool setFullscreen(const bool enable) = 0;
 
-		virtual [[nodiscard]] bool getIsFullscreen() = 0;
+		virtual bool getIsFullscreen() = 0;
 
 		virtual void* getNativeWindow() = 0;
 		virtual void* getNativeDisplay() = 0;
