@@ -1,298 +1,299 @@
-
+/*
+ * Copyright 2022 Marcus Madland
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #pragma once
 
 #include <functional>
 
-namespace mapp
+namespace mapp {
+
+enum class EventType
 {
-	enum class EventType
-	{
-		None,
+	None,
 
-		WindowClose, 
-		WindowResize, 
+	WindowClose, 
+	WindowResize, 
 
-		KeyPressed,
-		KeyReleased,
-		KeyPressing,
+	KeyPressed,
+	KeyReleased,
+	KeyPressing,
 
-		GamepadKeyPressed,
-		GamepadKeyReleased,
-		GamepadKeyPressing,
-		GamepadLeftJoystick,
-		GamepadRightJoystick,
-		GamepadLeftTrigger,
-		GamepadRightTrigger,
+	GamepadKeyPressed,
+	GamepadKeyReleased,
+	GamepadKeyPressing,
+	GamepadLeftJoystick,
+	GamepadRightJoystick,
+	GamepadLeftTrigger,
+	GamepadRightTrigger,
 
-		MouseMoved,
-		MouseScrolled,
-		MouseButtonPressed,
-		MouseButtonReleased,
-	};
+	MouseMoved,
+	MouseScrolled,
+	MouseButtonPressed,
+	MouseButtonReleased,
+};
 	
-	#define EVENT_CLASS_TYPE(type) \
-		static EventType getStaticType() { return EventType::type; } \
-		virtual EventType getEventType() const override { return getStaticType(); } 
+class Event
+{
+public:	
+	[[nodiscard]] virtual EventType getEventType() const = 0;
+
+	[[nodiscard]] bool getIsHandled() { return mHandled; }
+	void setIsHandled(bool handled) { mHandled = handled; }
+
+private:
+	bool mHandled = false;
+};
 	
-	class Event
+class EventDispatcher
+{
+public:
+	explicit EventDispatcher(Event& event);
+
+	template<typename T>
+	bool dispatch(std::function<bool(T&)> func)
 	{
-	public:
-		Event() = default;
-		virtual ~Event() = default;
-		
-		Event(const Event&) = default;
-		Event(Event&&) = default;
-		
-		Event& operator=(const Event&) = default;
-		Event& operator=(Event&&) = default;
-		
-		
-		[[nodiscard]] virtual EventType getEventType() const = 0;
-
-		
-		bool handled = false;
-	};
-	
-	class EventDispatcher
-	{
-		template<typename T>
-		using EventFn = std::function<bool(T&)>;
-
-	public:
-		explicit EventDispatcher(Event& event);
-
-		
-		template<typename T>
-		bool dispatch(EventFn<T> func)
+		if (mEvent.getEventType() == T().getEventType())
 		{
-			if (event.getEventType() == T::getStaticType())
-			{
-				event.handled = func(*static_cast<T*>(&event));
-				return true;
-			}
-			return false;
+			mEvent.setIsHandled(func(*static_cast<T*>(&mEvent)));
+			return true;
 		}
+		return false;
+	}
 
-	private:
-		Event& event;
-	};
+private:
+	Event& mEvent;
+};
 
-	class WindowResizeEvent final : public Event
-	{
-	public:
-		WindowResizeEvent(const uint32_t width, const uint32_t height);
+class WindowResizeEvent final : public Event
+{
+public:
+	explicit WindowResizeEvent(const uint32_t width = 0, const uint32_t height = 0);
 
-		[[nodiscard]] uint32_t getWidth() const { return width; }
-		[[nodiscard]] uint32_t getHeight() const { return height; }
+	[[nodiscard]] uint32_t getWidth() const { return mWidth; }
+	[[nodiscard]] uint32_t getHeight() const { return mHeight; }
 
 		
-		EVENT_CLASS_TYPE(WindowResize)
+	[[nodiscard]] EventType getEventType() const override { return EventType::WindowResize; }
 
-	private:
-		uint32_t width;
-		uint32_t height;
-	};
+
+private:
+	uint32_t mWidth;
+	uint32_t mHeight;
+};
 	
-	class WindowCloseEvent final : public Event
-	{
-	public:
-		EVENT_CLASS_TYPE(WindowClose)
-	};
+class WindowCloseEvent final : public Event
+{
+public:
+	[[nodiscard]] EventType getEventType() const override { return EventType::WindowClose; }
+};
 
-	class KeyEvent : public Event
-	{
-	public:
-		explicit KeyEvent(uint64_t code);
+class KeyEvent : public Event
+{
+public:
+	explicit KeyEvent(uint64_t code = 0);
 
-		[[nodiscard]] uint64_t getKeyCode() const { return keyCode; }
+	[[nodiscard]] uint64_t getKeyCode() const { return mKeyCode; }
 
-	private:
-		uint64_t keyCode;
-	};
+private:
+	uint64_t mKeyCode;
+};
 	
-	// Key
-	class KeyPressedEvent final : public KeyEvent
-	{
-	public:
-		KeyPressedEvent(const uint64_t code);
+// Key
+class KeyPressedEvent final : public KeyEvent
+{
+public:
+	explicit KeyPressedEvent(const uint64_t code = 0);
 
-		EVENT_CLASS_TYPE(KeyPressed)
-	};
+	[[nodiscard]] EventType getEventType() const override { return EventType::KeyPressed; }
+};
 	
-	class KeyReleasedEvent final : public KeyEvent
-	{
-	public:
-		explicit KeyReleasedEvent(const uint64_t code);
+class KeyReleasedEvent final : public KeyEvent
+{
+public:
+	explicit KeyReleasedEvent(const uint64_t code = 0);
 
-		EVENT_CLASS_TYPE(KeyReleased)
-	};
+	[[nodiscard]] EventType getEventType() const override { return EventType::KeyReleased; }
+};
 
-	class KeyPressingEvent final : public KeyEvent
-	{
-	public:
-		KeyPressingEvent(const uint64_t code);
+class KeyPressingEvent final : public KeyEvent
+{
+public:
+	explicit KeyPressingEvent(const uint64_t code = 0);
 
-		EVENT_CLASS_TYPE(KeyPressing)
-	};
+	[[nodiscard]] EventType getEventType() const override { return EventType::KeyPressing; }
+};
 
-	// Gamepad
-	class GamepadKeyPressedEvent final : public KeyEvent
-	{
-	public:
-		GamepadKeyPressedEvent(const uint64_t code, const int id);
+// Gamepad
+class GamepadKeyPressedEvent final : public KeyEvent
+{
+public:
+	explicit GamepadKeyPressedEvent(const uint64_t code = 0, const int id = 0);
 
-		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+	[[nodiscard]] int getControlledID() const { return mControllerIndex; }
 
-		EVENT_CLASS_TYPE(GamepadKeyPressed)
-	private:
-		int ControllerIndex;
-	};
+	[[nodiscard]] EventType getEventType() const override { return EventType::GamepadKeyPressed; }
+private:
+	int mControllerIndex;
+};
 
-	class GamepadKeyReleasedEvent final : public KeyEvent
-	{
-	public:
-		explicit GamepadKeyReleasedEvent(const uint64_t code, const int id);
+class GamepadKeyReleasedEvent final : public KeyEvent
+{
+public:
+	explicit GamepadKeyReleasedEvent(const uint64_t code = 0, const int id = 0);
 
-		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+	[[nodiscard]] int getControlledID() const { return mControllerIndex; }
 
-		EVENT_CLASS_TYPE(GamepadKeyReleased)
+	[[nodiscard]] EventType getEventType() const override { return EventType::GamepadKeyReleased; }
 
-	private:
-		int ControllerIndex;
-	};
+private:
+	int mControllerIndex;
+};
 
-	class GamepadKeyPressingEvent final : public KeyEvent
-	{
-	public:
-		GamepadKeyPressingEvent(const uint64_t code, const int id);
+class GamepadKeyPressingEvent final : public KeyEvent
+{
+public:
+	explicit GamepadKeyPressingEvent(const uint64_t code = 0, const int id = 0);
 
-		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+	[[nodiscard]] int getControlledID() const { return mControllerIndex; }
 
-		EVENT_CLASS_TYPE(GamepadKeyPressing)
+	[[nodiscard]] EventType getEventType() const override { return EventType::GamepadKeyPressing; }
 
-	private:
-		int ControllerIndex;
-	};
+private:
+	int mControllerIndex;
+};
 
-	class GamepadLeftJoystickEvent final : public Event
-	{
-	public:
-		GamepadLeftJoystickEvent(const float x, const float y, const int id);
+class GamepadLeftJoystickEvent final : public Event
+{
+public:
+	explicit GamepadLeftJoystickEvent(const float x = 0, const float y = 0, const int id = 0);
 
-		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+	[[nodiscard]] int getControlledID() const { return mControllerIndex; }
 
-		[[nodiscard]] float getX() const { return axisX; }
-		[[nodiscard]] float getY() const { return axisY; }
+	[[nodiscard]] float getX() const { return mAxisX; }
+	[[nodiscard]] float getY() const { return mAxisY; }
 
-		EVENT_CLASS_TYPE(GamepadLeftJoystick)
+	[[nodiscard]] EventType getEventType() const override { return EventType::GamepadLeftJoystick; }
 
-	private:
-		int ControllerIndex;
-		float axisX, axisY;
-	};
+private:
+	int mControllerIndex;
+	float mAxisX, mAxisY;
+};
 
-	class GamepadRightJoystickEvent final : public Event
-	{
-	public:
-		GamepadRightJoystickEvent(const float x, const float y, const int id);
+class GamepadRightJoystickEvent final : public Event
+{
+public:
+	explicit GamepadRightJoystickEvent(const float x = 0, const float y = 0, const int id = 0);
 
-		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+	[[nodiscard]] int getControlledID() const { return mControllerIndex; }
 
-		[[nodiscard]] float getX() const { return axisX; }
-		[[nodiscard]] float getY() const { return axisY; }
+	[[nodiscard]] float getX() const { return mAxisX; }
+	[[nodiscard]] float getY() const { return mAxisY; }
 
-		EVENT_CLASS_TYPE(GamepadRightJoystick)
+	[[nodiscard]] EventType getEventType() const override { return EventType::GamepadRightJoystick; }
 
-	private:
-		int ControllerIndex;
-		float axisX, axisY;
-	};
+private:
+	int mControllerIndex;
+	float mAxisX, mAxisY;
+};
 
-	class GamepadLeftTriggerEvent final : public Event
-	{
-	public:
-		GamepadLeftTriggerEvent(const float x, const int id);
+class GamepadLeftTriggerEvent final : public Event
+{
+public:
+	explicit GamepadLeftTriggerEvent(const float x = 0, const int id = 0);
 
-		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+	[[nodiscard]] int getControlledID() const { return mControllerIndex; }
 
-		[[nodiscard]] float getX() const { return axisX; }
+	[[nodiscard]] float getX() const { return mAxisX; }
 
-		EVENT_CLASS_TYPE(GamepadLeftTrigger)
+	[[nodiscard]] EventType getEventType() const override { return EventType::GamepadLeftTrigger; }
 
-	private:
-		int ControllerIndex;
-		float axisX;
-	};
+private:
+	int mControllerIndex;
+	float mAxisX;
+};
 
-	class GamepadRightTriggerEvent final : public Event
-	{
-	public:
-		GamepadRightTriggerEvent(const float x, const int id);
+class GamepadRightTriggerEvent final : public Event
+{
+public:
+	explicit GamepadRightTriggerEvent(const float x = 0, const int id = 0);
 
-		[[nodiscard]] int getControlledID() const { return ControllerIndex; }
+	[[nodiscard]] int getControlledID() const { return mControllerIndex; }
 
-		[[nodiscard]] float getX() const { return axisX; }
+	[[nodiscard]] float getX() const { return mAxisX; }
 
-		EVENT_CLASS_TYPE(GamepadRightTrigger)
+	[[nodiscard]] EventType getEventType() const override { return EventType::GamepadRightTrigger; }
 
-	private:
-		int ControllerIndex;
-		float axisX;
-	};
+private:
+	int mControllerIndex;
+	float mAxisX;
+};
 
-	// Mouse
-	class MouseMovedEvent final : public Event
-	{
-	public:
-		MouseMovedEvent(const float x, const float y);
+// Mouse
+class MouseMovedEvent final : public Event
+{
+public:
+	explicit MouseMovedEvent(const float x = 0.0f, const float y = 0.0f);
 
-		[[nodiscard]] float getX() const { return mouseX; }
-		[[nodiscard]] float getY() const { return mouseY; }
+	[[nodiscard]] float getX() const { return mMouseX; }
+	[[nodiscard]] float getY() const { return mMouseY; }
 
-		EVENT_CLASS_TYPE(MouseMoved)
+	[[nodiscard]] EventType getEventType() const override { return EventType::MouseMoved; }
 		
-	private:
-		float mouseX, mouseY;
-	};
+private:
+	float mMouseX, mMouseY;
+};
 	
-	class MouseScrolledEvent final : public Event
-	{
-	public:
-		MouseScrolledEvent(const float yOffset);
+class MouseScrolledEvent final : public Event
+{
+public:
+	explicit MouseScrolledEvent(const float yOffset = 0.0f);
 
-		[[nodiscard]] float getYOffset() const { return offsetY; }
+	[[nodiscard]] float getYOffset() const { return mOffsetY; }
 
-		EVENT_CLASS_TYPE(MouseScrolled)
+	[[nodiscard]] EventType getEventType() const override { return EventType::MouseScrolled; }
 		
-	private:
-		float offsetY;
-	};
+private:
+	float mOffsetY;
+};
 	
-	class MouseButtonEvent : public Event
-	{
-	public:
-		explicit MouseButtonEvent(const uint64_t button);
+class MouseButtonEvent : public Event
+{
+public:
+	explicit MouseButtonEvent(const uint64_t keyCode = 0);
 		
-		[[nodiscard]] uint64_t getMouseButton() const { return button; }
+	[[nodiscard]] uint64_t getKeyCode() const { return mKeyCode; }
 	
-	private:
-		uint64_t button;
-	};
+private:
+	uint64_t mKeyCode;
+};
 	
-	class MouseButtonPressedEvent final : public MouseButtonEvent
-	{
-	public:
-		explicit MouseButtonPressedEvent(const uint64_t button);
+class MouseButtonPressedEvent final : public MouseButtonEvent
+{
+public:
+	explicit MouseButtonPressedEvent(const uint64_t keyCode = 0);
 
-		EVENT_CLASS_TYPE(MouseButtonPressed)
-	};
+	[[nodiscard]] EventType getEventType() const override { return EventType::MouseButtonPressed; }
+};
 	
-	class MouseButtonReleasedEvent final : public MouseButtonEvent
-	{
-	public:
-		explicit MouseButtonReleasedEvent(const uint64_t button);
+class MouseButtonReleasedEvent final : public MouseButtonEvent
+{
+public:
+	explicit MouseButtonReleasedEvent(const uint64_t keyCode = 0);
 
-		EVENT_CLASS_TYPE(MouseButtonReleased)
-	};
-}
+	[[nodiscard]] EventType getEventType() const override { return EventType::MouseButtonReleased; }
+};
+
+}	// namespace mapp

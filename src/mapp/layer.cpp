@@ -1,62 +1,79 @@
+/*
+ * Copyright 2022 Marcus Madland
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+#include "mapp/layer.hpp"
+#include "mapp/app.hpp"
+#include "mapp/event.hpp"
 
-#include "../../include/mapp/layer.hpp"
-#include "../../include/mapp/app.hpp"
+#include <cassert>
 
-namespace mapp
+namespace mapp {
+
+LayerStack::LayerStack()
+	: mLayerInsertIndex(0)
+{}
+
+LayerStack::~LayerStack()
 {
-	Layer::Layer(const char* name)
-		: layerName(name)
+	for (Layer* layer : mLayers)
 	{
-	}
-
-	LayerStack::LayerStack()
-		: layerInsertIndex(0)
-	{}
-
-	LayerStack::~LayerStack()
-	{
-		for (const auto& layer : layers)
-		{
-			delete layer;
-		}
-	}
-
-	void LayerStack::pushLayer(Layer* layer)
-	{
-		layers.emplace(layers.begin() + layerInsertIndex, layer);
-		layerInsertIndex++;
-		layer->onInit();
-	}
-
-	void LayerStack::pushOverlay(Layer* overlay)
-	{
-		layers.emplace_back(overlay);
-		overlay->onInit();
-	}
-
-	void LayerStack::popLayer(Layer* layer)
-	{
-		const auto it = std::find(layers.begin(),
-			layers.begin() + layerInsertIndex, layer);
-
-		if (it != layers.begin() + layerInsertIndex)
-		{
-			layer->onShutdown();
-			layers.erase(it);
-			layerInsertIndex--;
-		}
-	}
-
-	void LayerStack::popOverlay(Layer* overlay)
-	{
-		const auto it = std::find(layers.begin() +
-			layerInsertIndex, layers.end(), overlay);
-
-		if (it != layers.end())
-		{
-			overlay->onShutdown();
-			layers.erase(it);
-		}
+		delete layer;
 	}
 }
+
+void LayerStack::pushLayer(Layer* layer, AppContext& context)
+{
+	assert(layer);
+	mLayers.emplace(mLayers.begin() + mLayerInsertIndex, layer);
+	mLayerInsertIndex++;
+	layer->onInit(context);
+}
+
+void LayerStack::pushOverlay(Layer* overlay, AppContext& context)
+{
+	assert(overlay);
+	mLayers.emplace_back(overlay);
+	overlay->onInit(context);
+}
+
+void LayerStack::popLayer(Layer* layer)
+{
+	assert(layer);
+	const auto it = std::find(mLayers.begin(),
+		mLayers.begin() + mLayerInsertIndex, layer);
+
+	if (it != mLayers.begin() + mLayerInsertIndex)
+	{
+		layer->onShutdown();
+		mLayers.erase(it);
+		mLayerInsertIndex--;
+	}
+}
+
+void LayerStack::popOverlay(Layer* overlay)
+{
+	assert(overlay);
+	const auto it = std::find(mLayers.begin() +
+		mLayerInsertIndex, mLayers.end(), overlay);
+
+	if (it != mLayers.end())
+	{
+		overlay->onShutdown();
+		mLayers.erase(it);
+	}
+}
+
+}	// namespace mapp

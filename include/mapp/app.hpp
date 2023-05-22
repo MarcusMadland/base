@@ -1,4 +1,18 @@
-
+/*
+ * Copyright 2022 Marcus Madland
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #pragma once
 
@@ -6,43 +20,46 @@
 #include "event.hpp"
 #include "layer.hpp"
 
-namespace mapp 
+namespace mapp {
+
+class App;
+
+class AppContext
 {
+public:
+	void setApp(App* app);
+	void setWindow(Window* window);
 
-	class App
-	{
-	public:
-		explicit App(Window* window = nullptr);
-		virtual ~App() = default;
+	App* getApp() { return mApp; }
+	Window* getWindow() { return mWindow; }
 
-		App(const App&) = delete;
-		App(App&&) = delete;
-		
-		App& operator=(const App&) = delete;
-		App& operator=(App&&) = delete;
+private:
+	App* mApp;
+	Window* mWindow;
+};
 
-		void run();
-		void shutdown();
-		void onEvent(Event& e);
-		void pushLayer(Layer* layer);
-		void pushOverlay(Layer* layer);
+class App
+{
+public:
+	explicit App(Window* window = nullptr);
 
-		static App& getInstance() { return *instance; }
-		static bool isValid() { return instance; }
-		[[nodiscard]] Window* getWindow() const { return window; }
+	void run();
+	void shutdown();
+	void onEvent(Event& event);
+	void pushLayer(Layer* layer);
+	void pushOverlay(Layer* layer);
 
-	private:
-		bool onWindowClose(WindowCloseEvent& e);
-		bool onWindowResize(const WindowResizeEvent& e);
+private:
+	bool onWindowClose(WindowCloseEvent& event);
+	bool onWindowResize(const WindowResizeEvent& event);
 
-	private:
-        static App* instance;
+private:
+	AppContext mContext;
+	LayerStack mLayerStack;
+	Window* mWindow;
+	bool mIsRunning;
+	float mLastFrameTime;
+	float mDeltaTime;
+};
 
-		Window* window; 
-		LayerStack layerStack;
-		bool isRunning;
-
-		float lastFrameTime;
-		float deltaTime;
-	};
-}
+}	// namespace mapp

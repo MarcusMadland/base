@@ -1,100 +1,132 @@
-#include "../../include/mapp/app.hpp"
+/*
+ * Copyright 2022 Marcus Madland
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "mapp/app.hpp"
+
 #include <chrono>
 #include <iostream>
+#include <cassert>
 
-namespace mapp
+namespace mapp {
+
+void AppContext::setApp(App* app)
 {
-	#define BIND_EVENT_FN(x) std::bind(&App::x, \
-		this, std::placeholders::_1)
-	App* App::instance = nullptr;
+	assert(app);
+	mApp = app;
+}
+void AppContext::setWindow(Window* window)
+{
+	assert(window);
+	mWindow = window;
+}
 
-	App::App(Window* window) 
-		: window(window)
-		, layerStack(LayerStack())
-		, isRunning(true)
-		, lastFrameTime(0.0f)
-		, deltaTime(0.0f)
-		
+App::App(Window* window) 
+	: mContext(AppContext())
+	, mLayerStack(LayerStack())
+	, mWindow(window)
+	, mIsRunning(true)
+	, mLastFrameTime(0.0f)
+	, mDeltaTime(0.0f)
+{
+	mContext.setApp(this);
+
+	if (mWindow) 
 	{
-		instance = this;
-
-		if (window) 
-		{
-            window->setEventCallback(BIND_EVENT_FN(onEvent));
-		}
-	}
-
-	void App::pushLayer(Layer* layer)
-	{
-		layerStack.pushLayer(layer);
-	}
-
-	void App::pushOverlay(Layer* layer)
-	{
-		layerStack.pushOverlay(layer);
-	}
-
-	void App::run()
-	{
-		while (isRunning)
-		{
-			const auto start = std::chrono::high_resolution_clock::now(); 
-
-			
-			for (Layer* layer : layerStack)
-			{
-				layer->onUpdate(deltaTime);
-			}
-
-			if (window)
-			{
-				window->onUpdate(deltaTime);
-			}
-
-			for (Layer* layer : layerStack)
-			{
-				layer->onPostUpdate(deltaTime);
-			}
-			
-
-			const auto end = std::chrono::high_resolution_clock::now();
-			const std::chrono::duration<float> duration = end - start;
-
-			lastFrameTime = deltaTime;
-			deltaTime = duration.count();
-		}
-	}
-
-	void App::shutdown()
-	{
-		if (isRunning)
-		{
-			isRunning = false;
-		}
-	}
-
-	void App::onEvent(Event& e)
-	{
-		EventDispatcher dispatcher(e);
-		dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(onWindowClose));
-		dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(onWindowResize));
-
-		for (auto it = layerStack.end(); it != layerStack.begin(); )
-		{
-			(*--it)->onEvent(e);
-			if (e.handled)
-				break;
-		}
-	}
-
-	bool App::onWindowClose(WindowCloseEvent& e)
-	{
-		isRunning = false;
-		return true;
-	}
-
-	bool App::onWindowResize(const WindowResizeEvent& e)
-	{
-		return false;
+		mContext.setWindow(mWindow);
+        mWindow->setEventCallback([this](Event& event) { onEvent(event); });
 	}
 }
+
+void App::pushLayer(Layer* layer)
+{
+	assert(layer);
+	mLayerStack.pushLayer(layer, mContext);
+}
+
+void App::pushOverlay(Layer* layer)
+{
+	assert(layer);
+	mLayerStack.pushOverlay(layer, mContext);
+}
+
+void App::run()
+{
+	while (mIsRunning)
+	{
+		const auto start = std::chrono::high_resolution_clock::now(); 
+			
+		for (Layer* layer : mLayerStack)
+		{
+			assert(layer);
+			layer->onUpdate(mDeltaTime);
+		}
+
+		if (mWindow)
+		{
+			mWindow->onUpdate(mDeltaTime);
+		}
+
+		for (Layer* layer : mLayerStack)
+		{
+			assert(layer);
+			layer->onRender(mDeltaTime);
+		}
+			
+
+		const auto end = std::chrono::high_resolution_clock::now();
+		const std::chrono::duration<float> duration = end - start;
+
+		mLastFrameTime = mDeltaTime;
+		mDeltaTime = duration.count();
+	}
+}
+
+void App::shutdown()
+{
+	if (mIsRunning)
+	{
+		mIsRunning = false;
+	}
+}
+
+void App::onEvent(Event& event)
+{
+	EventDispatcher dispatcher(event);
+	dispatcher.dispatch<WindowCloseEvent>(std::bind(&App::onWindowClose, this, std::placeholders::_1));
+	dispatcher.dispatch<WindowResizeEvent>(std::bind(&App::onWindowResize, this, std::placeholders::_1));
+
+	for (auto it = mLayerStack.end(); it != mLayerStack.begin(); )
+	{
+		(*--it)->onEvent(event);
+		if (event.getIsHandled())
+		{
+			break;
+		}
+	}
+}
+
+bool App::onWindowClose(WindowCloseEvent& event)
+{
+	mIsRunning = false;
+	return true;
+}
+
+bool App::onWindowResize(const WindowResizeEvent& event)
+{
+	return false;
+}
+
+}	// namespace mapp

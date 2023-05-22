@@ -1,82 +1,93 @@
-#include "../../include/mapp/event.hpp"
+/*
+ * Copyright 2022 Marcus Madland
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-namespace mapp
-{
-	EventDispatcher::EventDispatcher(Event& event)
-		: event(event)
-	{}
+#include "mapp/event.hpp"
 
-	WindowResizeEvent::WindowResizeEvent(const uint32_t width, const uint32_t height)
-		: width(width), height(height)
-	{}
+namespace mapp {
 
-	KeyEvent::KeyEvent(const uint64_t code)
-		 : keyCode(code)
-	{}
+EventDispatcher::EventDispatcher(Event& event)
+	: mEvent(event)
+{}
 
-	KeyPressedEvent::KeyPressedEvent(const uint64_t code)
-		: KeyEvent(code)
-	{}
+WindowResizeEvent::WindowResizeEvent(const uint32_t width, const uint32_t height)
+	: mWidth(width), mHeight(height)
+{}
 
-	KeyReleasedEvent::KeyReleasedEvent(const uint64_t code)
-		: KeyEvent(code)
-	{}
+KeyEvent::KeyEvent(const uint64_t code)
+	: mKeyCode(code)
+{}
 
-	KeyPressingEvent::KeyPressingEvent(const uint64_t code)
-		: KeyEvent(code)
-	{}
+KeyPressedEvent::KeyPressedEvent(const uint64_t code)
+	: KeyEvent(code)
+{}
 
-	GamepadKeyPressedEvent::GamepadKeyPressedEvent(const uint64_t code, const int id)
-		: KeyEvent(code), ControllerIndex(id)
-	{
-	}
+KeyReleasedEvent::KeyReleasedEvent(const uint64_t code)
+	: KeyEvent(code)
+{}
 
-	GamepadKeyReleasedEvent::GamepadKeyReleasedEvent(const uint64_t code, const int id)
-		: KeyEvent(code), ControllerIndex(id)
-	{
-	}
+KeyPressingEvent::KeyPressingEvent(const uint64_t code)
+	: KeyEvent(code)
+{}
 
-	GamepadKeyPressingEvent::GamepadKeyPressingEvent(const uint64_t code, const int id)
-		: KeyEvent(code), ControllerIndex(id)
-	{
-	}
+GamepadKeyPressedEvent::GamepadKeyPressedEvent(const uint64_t code, const int id)
+	: KeyEvent(code), mControllerIndex(id)
+{}
 
-	GamepadLeftJoystickEvent::GamepadLeftJoystickEvent(const float x, const float y, const int id)
-		: axisX(x), axisY(y), ControllerIndex(id)
-	{}
+GamepadKeyReleasedEvent::GamepadKeyReleasedEvent(const uint64_t code, const int id)
+	: KeyEvent(code), mControllerIndex(id)
+{}
 
-	GamepadRightJoystickEvent::GamepadRightJoystickEvent(const float x, const float y, const int id)
-		: axisX(x), axisY(y), ControllerIndex(id)
-	{}
+GamepadKeyPressingEvent::GamepadKeyPressingEvent(const uint64_t code, const int id)
+	: KeyEvent(code), mControllerIndex(id)
+{}
+
+GamepadLeftJoystickEvent::GamepadLeftJoystickEvent(const float x, const float y, const int id)
+	: mAxisX(x), mAxisY(y), mControllerIndex(id)
+{}
+
+GamepadRightJoystickEvent::GamepadRightJoystickEvent(const float x, const float y, const int id)
+	: mAxisX(x), mAxisY(y), mControllerIndex(id)
+{}
 	
-	GamepadLeftTriggerEvent::GamepadLeftTriggerEvent(const float x, const int id)
-		: axisX(x), ControllerIndex(id)
-	{}
+GamepadLeftTriggerEvent::GamepadLeftTriggerEvent(const float x, const int id)
+	: mAxisX(x), mControllerIndex(id)
+{}
 
-	GamepadRightTriggerEvent::GamepadRightTriggerEvent(const float x, const int id)
-		: axisX(x), ControllerIndex(id)
-	{}
+GamepadRightTriggerEvent::GamepadRightTriggerEvent(const float x, const int id)
+	: mAxisX(x), mControllerIndex(id)
+{}
 
-	MouseMovedEvent::MouseMovedEvent(const float x, const float y)
-		 : mouseX(x), mouseY(y)
-	{}
+MouseMovedEvent::MouseMovedEvent(const float x, const float y)
+	: mMouseX(x), mMouseY(y)
+{}
 
-	MouseScrolledEvent::MouseScrolledEvent(const float yOffset)
-		: offsetY(yOffset)
-	{}
+MouseScrolledEvent::MouseScrolledEvent(const float yOffset)
+	: mOffsetY(yOffset)
+{}
 
-	MouseButtonEvent::MouseButtonEvent(const uint64_t button)
-		: button(button)
-	{}
+MouseButtonEvent::MouseButtonEvent(const uint64_t keyCode)
+	: mKeyCode(keyCode)
+{}
 
-	MouseButtonPressedEvent::MouseButtonPressedEvent(const uint64_t button)
-		: MouseButtonEvent(button)
-	{}
+MouseButtonPressedEvent::MouseButtonPressedEvent(const uint64_t keyCode)
+	: MouseButtonEvent(keyCode)
+{}
 	
-	MouseButtonReleasedEvent::MouseButtonReleasedEvent(const uint64_t button)
-		: MouseButtonEvent(button)
-	{}
+MouseButtonReleasedEvent::MouseButtonReleasedEvent(const uint64_t keyCode)
+	: MouseButtonEvent(keyCode)
+{}
 
-	
-
-}
+}	// namespace mapp
