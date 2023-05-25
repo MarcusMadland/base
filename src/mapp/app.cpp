@@ -68,12 +68,6 @@ void App::run()
 	{
 		const auto start = std::chrono::high_resolution_clock::now(); 
 			
-		for (Layer* layer : mLayerStack)
-		{
-			assert(layer);
-			layer->onUpdate(mDeltaTime);
-		}
-
 		if (mWindow)
 		{
 			mWindow->onUpdate(mDeltaTime);
@@ -82,7 +76,19 @@ void App::run()
 		for (Layer* layer : mLayerStack)
 		{
 			assert(layer);
+			layer->onUpdate(mDeltaTime);
+		}
+
+		for (Layer* layer : mLayerStack)
+		{
+			assert(layer);
 			layer->onRender(mDeltaTime);
+		}
+
+		for (Layer* layer : mLayerStack)
+		{
+			assert(layer);
+			layer->onPostRender(mDeltaTime);
 		}
 			
 

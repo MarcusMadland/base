@@ -20,6 +20,7 @@
 
 #include "mapp/win32/win32_window.hpp"
 #include "mapp/app.hpp"
+#include "../../third-party/imgui/examples/imgui_impl_win32.h"
 
 #include <windowsx.h>
 #include <Xinput.h>
@@ -35,159 +36,158 @@
 
 namespace mapp {
 
-static bool doOnce = true;
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	// Retrieve the pointer to your window wrapper class instance
-	WindowWin32* pWindowWrapper = nullptr;
-	if (uMsg == WM_NCCREATE)
-	{
-		CREATESTRUCT* pCreateStruct = reinterpret_cast<CREATESTRUCT*>(lParam);
-		pWindowWrapper = static_cast<WindowWin32*>(pCreateStruct->lpCreateParams);
+	static bool doOnce = true;
 
-		// Associate the pointer to the window's user data
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindowWrapper));
-	}
-	else
+	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		// Retrieve the pointer from the window's user data
-		pWindowWrapper = reinterpret_cast<WindowWin32*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-	}
-
-	if (pWindowWrapper && pWindowWrapper->getNativeWindow())
-	{
-			
-		switch (uMsg)
+		// Retrieve the pointer to your window wrapper class instance
+		WindowWin32* pWindowWrapper = nullptr;
+		if (uMsg == WM_NCCREATE)
 		{
-		case WM_CLOSE:
-		{
-			DestroyWindow(hWnd);
+			CREATESTRUCT* pCreateStruct = reinterpret_cast<CREATESTRUCT*>(lParam);
+			pWindowWrapper = static_cast<WindowWin32*>(pCreateStruct->lpCreateParams);
 
-			mapp::WindowCloseEvent event;
-			pWindowWrapper->mEventCallback(event);
-
-			break;
+			// Associate the pointer to the window's user data
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindowWrapper));
 		}
-			
-		case WM_SIZE:
+		else
 		{
-			SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW);
-			PostMessage(hWnd, WM_PAINT, 0, 0);
+			// Retrieve the pointer from the window's user data
+			pWindowWrapper = reinterpret_cast<WindowWin32*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+		}
 
-			// We make sure we never resize the first time, this will give a crash in the win32 api @todo make better
-			if (!doOnce)
+		if (pWindowWrapper && pWindowWrapper->getNativeWindow())
+		{
+
+			switch (uMsg)
 			{
-				int width = LOWORD(lParam);
-				int height = HIWORD(lParam);
+			case WM_CLOSE:
+			{
+				DestroyWindow(hWnd);
 
-				mapp::WindowResizeEvent event = mapp::WindowResizeEvent(width, height);
+				mapp::WindowCloseEvent event;
 				pWindowWrapper->mEventCallback(event);
+
+				break;
 			}
-			doOnce = false;
-				
-			break;
-		}
 
-		// Keyboard
-		case WM_KEYDOWN:
-		{
-			const bool wasDown = (lParam & (1 << 30)) != 0;
+			case WM_SIZE:
+			{
+				SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW);
+				PostMessage(hWnd, WM_PAINT, 0, 0);
 
-			if (!wasDown)
+				// We make sure we never resize the first time, this will give a crash in the win32 api @todo make better
+				if (!doOnce)
+				{
+					int width = LOWORD(lParam);
+					int height = HIWORD(lParam);
+
+					mapp::WindowResizeEvent event = mapp::WindowResizeEvent(width, height);
+					pWindowWrapper->mEventCallback(event);
+				}
+				doOnce = false;
+
+				break;
+			}
+
+			// Keyboard
+			case WM_KEYDOWN:
+			{
+				const bool wasDown = (lParam & (1 << 30)) != 0;
+
+				if (!wasDown)
+				{
+					const uint64_t keyCode = wParam;
+
+					mapp::KeyPressedEvent event = mapp::KeyPressedEvent(keyCode);
+					pWindowWrapper->mEventCallback(event);
+				}
+				else
+				{
+					const uint64_t keyCode = wParam;
+
+					mapp::KeyPressingEvent event = mapp::KeyPressingEvent(keyCode);
+					pWindowWrapper->mEventCallback(event);
+				}
+
+				break;
+			}
+
+			case WM_KEYUP:
+			{
+				const bool wasDown = (lParam & (1 << 30)) != 0;
+				const bool isDown = (lParam & (1 << 31)) == 0;
+
+				if (wasDown && !isDown)
+				{
+					const uint64_t keyCode = wParam;
+
+					mapp::KeyReleasedEvent event = mapp::KeyReleasedEvent(keyCode);
+					pWindowWrapper->mEventCallback(event);
+				}
+
+				break;
+			}
+
+			// Mouse
+			case WM_LBUTTONDOWN:
+			case WM_RBUTTONDOWN:
+			case WM_MBUTTONDOWN:
 			{
 				const uint64_t keyCode = wParam;
 
-				mapp::KeyPressedEvent event = mapp::KeyPressedEvent(keyCode);
+				mapp::MouseButtonPressedEvent event = mapp::MouseButtonPressedEvent(keyCode);
 				pWindowWrapper->mEventCallback(event);
+
+				break;
 			}
-			else
+
+			case WM_LBUTTONUP:
+			case WM_RBUTTONUP:
+			case WM_MBUTTONUP:
 			{
 				const uint64_t keyCode = wParam;
 
-				mapp::KeyPressingEvent event = mapp::KeyPressingEvent(keyCode);
+				mapp::MouseButtonReleasedEvent event = mapp::MouseButtonReleasedEvent(keyCode);
 				pWindowWrapper->mEventCallback(event);
-			}
-				
-			break;
-		}
-			
-		case WM_KEYUP:
-		{
-			const bool wasDown = (lParam & (1 << 30)) != 0;
-			const bool isDown = (lParam & (1 << 31)) == 0;
 
-			if (wasDown && !isDown)
+				break;
+			}
+
+			case WM_MOUSEMOVE:
 			{
-				const uint64_t keyCode = wParam;
-
-				mapp::KeyReleasedEvent event = mapp::KeyReleasedEvent(keyCode);
+				mapp::MouseMovedEvent event = mapp::MouseMovedEvent(static_cast<float>(GET_X_LPARAM(lParam)), static_cast<float>(GET_Y_LPARAM(lParam)));
 				pWindowWrapper->mEventCallback(event);
+
+				break;
 			}
 
-			break;
+			case WM_MOUSEWHEEL:
+			{
+				float inMin = -120.0f;
+				float inMax = 120.0f;
+				float outMin = -1.0f;
+				float outMax = 1.0f;
+
+				// Map the input values so they will be from -1 to 1 instead of inMin to inMax
+				float x = ((float)GET_WHEEL_DELTA_WPARAM(wParam) - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+
+				mapp::MouseScrolledEvent event = mapp::MouseScrolledEvent(x);
+				pWindowWrapper->mEventCallback(event);
+
+				break;
+			}
+
+			case WM_DESTROY:
+			{
+				PostQuitMessage(0);
+				return 0;
+			}
+			}
 		}
 
-		// Mouse
-		case WM_LBUTTONDOWN:
-		case WM_RBUTTONDOWN:
-		case WM_MBUTTONDOWN:
-		{
-			const uint64_t keyCode = wParam;
-
-			mapp::MouseButtonPressedEvent event = mapp::MouseButtonPressedEvent(keyCode);
-			pWindowWrapper->mEventCallback(event);
-
-			break;
-		}
-
-		case WM_LBUTTONUP:
-		case WM_RBUTTONUP:
-		case WM_MBUTTONUP:
-		{
-			const uint64_t keyCode = wParam;
-
-			mapp::MouseButtonReleasedEvent event = mapp::MouseButtonReleasedEvent(keyCode);
-			pWindowWrapper->mEventCallback(event);
-
-			break;
-		}
-
-		case WM_MOUSEMOVE:
-		{
-			mapp::MouseMovedEvent event = mapp::MouseMovedEvent(static_cast<float>(GET_X_LPARAM(lParam)), static_cast<float>(GET_Y_LPARAM(lParam)));
-			pWindowWrapper->mEventCallback(event);
-				
-			break;
-		}
-
-		case WM_MOUSEWHEEL:
-		{
-			float inMin = -120.0f;
-			float inMax = 120.0f;
-			float outMin = -1.0f;
-			float outMax = 1.0f;
-
-			// Map the input values so they will be from -1 to 1 instead of inMin to inMax
-			float x = ((float)GET_WHEEL_DELTA_WPARAM(wParam) - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-
-			mapp::MouseScrolledEvent event = mapp::MouseScrolledEvent(x);
-			pWindowWrapper->mEventCallback(event);
-
-			break;
-		}
-
-		case WM_DESTROY:
-		{
-			PostQuitMessage(0);
-			return 0;
-		}
-		}
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
-
-		
-
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
 
 std::string GetLastErrorAsString()
 {
@@ -278,6 +278,7 @@ WindowWin32::WindowWin32(const WindowParams& params)
 	}
 
 	ShowWindow(mWindow, SW_SHOW);
+	UpdateWindow(mWindow);
 }
 
 WindowWin32::~WindowWin32()

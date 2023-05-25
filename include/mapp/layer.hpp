@@ -30,6 +30,7 @@ public:
 	virtual void onShutdown() {}
 	virtual void onUpdate(const float& dt) {}
 	virtual void onRender(const float& dt) {}
+	virtual void onPostRender(const float& dt) {}
 	virtual void onEvent(Event& event) {}
 };
 
