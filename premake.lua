@@ -27,7 +27,10 @@ project "mapp"
 		}
 		links 
 		{ 
-			"Xinput9_1_0", "gdi32", "kernel32", "psapi" 
+			"Xinput9_1_0", 
+			"gdi32", 
+			"kernel32", 
+			"psapi",
 		}
 	filter ""
 

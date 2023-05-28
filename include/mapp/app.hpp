@@ -49,6 +49,8 @@ public:
 	void pushLayer(Layer* layer);
 	void pushOverlay(Layer* layer);
 
+	float getDeltaTime() { return mDeltaTime; }
+
 private:
 	bool onWindowClose(WindowCloseEvent& event);
 	bool onWindowResize(const WindowResizeEvent& event);

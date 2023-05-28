@@ -36,6 +36,11 @@ void Window::setEventCallback(const std::function<void(Event&)>& callback)
 	mEventCallback = callback;
 }
 
+void Window::setParams(const WindowParams& params)
+{
+	mParams = params;
+}
+
 Window* Window::create(const WindowParams& params)
 {
 	// Create window depending on platform

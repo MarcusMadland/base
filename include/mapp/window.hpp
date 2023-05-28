@@ -50,7 +50,8 @@ public:
 
 	void setEventCallback(const std::function<void(Event&)>& callback);
 
-	[[nodiscard]] WindowParams getParams() { return mParams; }
+	[[nodiscard]] const WindowParams& getParams() { return mParams; }
+	void setParams(const WindowParams& params);
 
 	static Window* create(const WindowParams& params);
        

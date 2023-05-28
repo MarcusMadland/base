@@ -82,15 +82,8 @@ void App::run()
 		for (Layer* layer : mLayerStack)
 		{
 			assert(layer);
-			layer->onRender(mDeltaTime);
+			layer->onRender();
 		}
-
-		for (Layer* layer : mLayerStack)
-		{
-			assert(layer);
-			layer->onPostRender(mDeltaTime);
-		}
-			
 
 		const auto end = std::chrono::high_resolution_clock::now();
 		const std::chrono::duration<float> duration = end - start;
@@ -132,6 +125,11 @@ bool App::onWindowClose(WindowCloseEvent& event)
 
 bool App::onWindowResize(const WindowResizeEvent& event)
 {
+	WindowParams params = mWindow->getParams();
+	params.mWidth = event.getWidth();
+	params.mHeight = event.getHeight();
+	mWindow->setParams(params);
+
 	return false;
 }
 

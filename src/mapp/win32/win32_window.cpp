@@ -20,7 +20,6 @@
 
 #include "mapp/win32/win32_window.hpp"
 #include "mapp/app.hpp"
-#include "../../third-party/imgui/examples/imgui_impl_win32.h"
 
 #include <windowsx.h>
 #include <Xinput.h>
