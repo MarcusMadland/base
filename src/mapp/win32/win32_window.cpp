@@ -26,6 +26,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
+#include <cstdlib>
 
 // @todo Should be parameters for the user right?
 #define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
@@ -256,7 +257,8 @@ WindowWin32::WindowWin32(const WindowParams& params)
 	// Window
 	const size_t len = params.mTitle.length() + 1;
 	wchar_t* windowTitle = new wchar_t[len];
-	std::mbstowcs(windowTitle, params.mTitle.c_str(), len);
+	//std::mbstowcs(windowTitle, params.mTitle.c_str(), len);
+	mbstowcs_s(nullptr, windowTitle, len, params.mTitle.c_str(), len);
 	mWindow = CreateWindowEx(
 		0,
 		mClassName,
@@ -278,11 +280,19 @@ WindowWin32::WindowWin32(const WindowParams& params)
 
 	ShowWindow(mWindow, SW_SHOW);
 	UpdateWindow(mWindow);
+
+	HRESULT hr = CoInitialize(nullptr);
+	if (FAILED(hr))
+	{
+		std::cout << "Failed CoInitialize" << std::endl;
+	}
 }
 
 WindowWin32::~WindowWin32()
 {
 	UnregisterClass(mClassName, mInstance);
+
+	CoUninitialize();
 }
 
 void WindowWin32::onUpdate(const float& dt)
