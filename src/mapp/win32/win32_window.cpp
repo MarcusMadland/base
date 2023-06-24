@@ -143,10 +143,26 @@ namespace mapp {
 			}
 
 			case WM_LBUTTONUP:
+			{
+				uint64_t keyCode = 1;
+
+				mapp::MouseButtonReleasedEvent event = mapp::MouseButtonReleasedEvent(keyCode);
+				pWindowWrapper->mEventCallback(event);
+
+				break;
+			}
 			case WM_RBUTTONUP:
+			{
+				uint64_t keyCode = 2;
+
+				mapp::MouseButtonReleasedEvent event = mapp::MouseButtonReleasedEvent(keyCode);
+				pWindowWrapper->mEventCallback(event);
+
+				break;
+			}
 			case WM_MBUTTONUP:
 			{
-				const uint64_t keyCode = wParam;
+				uint64_t keyCode = 16;
 
 				mapp::MouseButtonReleasedEvent event = mapp::MouseButtonReleasedEvent(keyCode);
 				pWindowWrapper->mEventCallback(event);
