@@ -1,497 +1,371 @@
-/*
- * Copyright 2022 Marcus Madland
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+#include "mapp/Win32/WIN32_window.hpp"
 
-#include "mapp/platform.hpp"
-
-#ifdef MAPP_PLATFORM_WIN32
-
-#include "mapp/win32/win32_window.hpp"
-#include "mapp/app.hpp"
-
+#include "Shobjidl.h"
+#include "dwmapi.h"
 #include <windowsx.h>
-#include <Xinput.h>
-#include <iostream>
-#include <fstream>
-#include <stdlib.h>
-#include <cstdlib>
+#pragma comment(lib, "dwmapi.lib")
+#pragma comment(lib, "uxtheme.lib")
 
-// @todo Should be parameters for the user right?
-#define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
-#define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
-#define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    30
-#define INPUT_DEADZONE						8000
-
-namespace mapp {
-
-	static bool doOnce = true;
-
-	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-	{
-		// Retrieve the pointer to your window wrapper class instance
-		WindowWin32* pWindowWrapper = nullptr;
-		if (uMsg == WM_NCCREATE)
-		{
-			CREATESTRUCT* pCreateStruct = reinterpret_cast<CREATESTRUCT*>(lParam);
-			pWindowWrapper = static_cast<WindowWin32*>(pCreateStruct->lpCreateParams);
-
-			// Associate the pointer to the window's user data
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindowWrapper));
-		}
-		else
-		{
-			// Retrieve the pointer from the window's user data
-			pWindowWrapper = reinterpret_cast<WindowWin32*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-		}
-
-		if (pWindowWrapper && pWindowWrapper->getNativeWindow())
-		{
-
-			switch (uMsg)
-			{
-			case WM_CLOSE:
-			{
-				DestroyWindow(hWnd);
-
-				mapp::WindowCloseEvent event;
-				pWindowWrapper->mEventCallback(event);
-
-				break;
-			}
-
-			case WM_SIZE:
-			{
-				SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW);
-				PostMessage(hWnd, WM_PAINT, 0, 0);
-
-				// We make sure we never resize the first time, this will give a crash in the win32 api @todo make better
-				if (!doOnce)
-				{
-					int width = LOWORD(lParam);
-					int height = HIWORD(lParam);
-
-					mapp::WindowResizeEvent event = mapp::WindowResizeEvent(width, height);
-					pWindowWrapper->mEventCallback(event);
-				}
-				doOnce = false;
-
-				break;
-			}
-
-			// Keyboard
-			case WM_KEYDOWN:
-			{
-				const bool wasDown = (lParam & (1 << 30)) != 0;
-
-				if (!wasDown)
-				{
-					const uint64_t keyCode = wParam;
-
-					mapp::KeyPressedEvent event = mapp::KeyPressedEvent(keyCode);
-					pWindowWrapper->mEventCallback(event);
-				}
-				else
-				{
-					const uint64_t keyCode = wParam;
-
-					mapp::KeyPressingEvent event = mapp::KeyPressingEvent(keyCode);
-					pWindowWrapper->mEventCallback(event);
-				}
-
-				break;
-			}
-
-			case WM_KEYUP:
-			{
-				const bool wasDown = (lParam & (1 << 30)) != 0;
-				const bool isDown = (lParam & (1 << 31)) == 0;
-
-				if (wasDown && !isDown)
-				{
-					const uint64_t keyCode = wParam;
-
-					mapp::KeyReleasedEvent event = mapp::KeyReleasedEvent(keyCode);
-					pWindowWrapper->mEventCallback(event);
-				}
-
-				break;
-			}
-
-			// Mouse
-			case WM_LBUTTONDOWN:
-			case WM_RBUTTONDOWN:
-			case WM_MBUTTONDOWN:
-			{
-				const uint64_t keyCode = wParam;
-
-				mapp::MouseButtonPressedEvent event = mapp::MouseButtonPressedEvent(keyCode);
-				pWindowWrapper->mEventCallback(event);
-
-				break;
-			}
-
-			case WM_LBUTTONUP:
-			{
-				uint64_t keyCode = 1;
-
-				mapp::MouseButtonReleasedEvent event = mapp::MouseButtonReleasedEvent(keyCode);
-				pWindowWrapper->mEventCallback(event);
-
-				break;
-			}
-			case WM_RBUTTONUP:
-			{
-				uint64_t keyCode = 2;
-
-				mapp::MouseButtonReleasedEvent event = mapp::MouseButtonReleasedEvent(keyCode);
-				pWindowWrapper->mEventCallback(event);
-
-				break;
-			}
-			case WM_MBUTTONUP:
-			{
-				uint64_t keyCode = 16;
-
-				mapp::MouseButtonReleasedEvent event = mapp::MouseButtonReleasedEvent(keyCode);
-				pWindowWrapper->mEventCallback(event);
-
-				break;
-			}
-
-			case WM_MOUSEMOVE:
-			{
-				mapp::MouseMovedEvent event = mapp::MouseMovedEvent(static_cast<float>(GET_X_LPARAM(lParam)), static_cast<float>(GET_Y_LPARAM(lParam)));
-				pWindowWrapper->mEventCallback(event);
-
-				break;
-			}
-
-			case WM_MOUSEWHEEL:
-			{
-				float inMin = -120.0f;
-				float inMax = 120.0f;
-				float outMin = -1.0f;
-				float outMax = 1.0f;
-
-				// Map the input values so they will be from -1 to 1 instead of inMin to inMax
-				float x = ((float)GET_WHEEL_DELTA_WPARAM(wParam) - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-
-				mapp::MouseScrolledEvent event = mapp::MouseScrolledEvent(x);
-				pWindowWrapper->mEventCallback(event);
-
-				break;
-			}
-
-			case WM_DESTROY:
-			{
-				PostQuitMessage(0);
-				return 0;
-			}
-			}
-		}
-
-		return DefWindowProc(hWnd, uMsg, wParam, lParam);
-	}
-
-std::string GetLastErrorAsString()
+enum Style : DWORD
 {
-	//Get the error message ID, if any.
-	DWORD errorMessageID = ::GetLastError();
-	if (errorMessageID == 0) {
-		return std::string(); //No error message has been recorded
-	}
+    windowed = WS_OVERLAPPEDWINDOW,
+    aero_borderless = WS_POPUP | WS_THICKFRAME,
+    basicBorderless = WS_CAPTION | WS_OVERLAPPED | WS_THICKFRAME |
+                      WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+};
 
-	LPSTR messageBuffer = nullptr;
+HBRUSH hBrush = CreateSolidBrush(RGB(30, 30, 30));
 
-	//Ask Win32 to give us the string version of that message ID.
-	//The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
-	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+namespace mapp
+{
+Window::Window(){};
 
-	//Copy the error message into a std::string.
-	std::string message(messageBuffer, size);
-
-	//Free the Win32's string's buffer.
-	LocalFree(messageBuffer);
-
-	return message;
+Window::~Window()
+{
+    if (hwnd != nullptr)
+    {
+        close();
+    }
 }
 
-WindowWin32::WindowWin32(const WindowParams& params)
-	: Window(params)
-	, mClassName(L"WindowsWindowClass")
-	, mIsFullscreen(false)
+const WindowDesc Window::getDesc() { return mDesc; }
+
+bool Window::create(const WindowDesc& desc, EventQueue& eventQueue)
 {
-	// Instance
-	mInstance = GetModuleHandle(0);
+    mEventQueue = &eventQueue;
+    const XWinState& mappState = getXWinState();
 
-	// Class
-	WNDCLASSEX windowClass = WNDCLASSEX();
-	windowClass.lpszClassName = mClassName;
-	windowClass.hInstance = mInstance;
-	windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	windowClass.cbSize = sizeof(WNDCLASSEX);
-	windowClass.cbClsExtra = 0;
-	windowClass.cbWndExtra = WS_EX_NOPARENTNOTIFY;
-	windowClass.lpfnWndProc = WindowProc; 
-	windowClass.style = CS_HREDRAW | CS_VREDRAW | (params.mCanClose ? 0 : CS_NOCLOSE);
-	windowClass.hIcon = NULL;
-	windowClass.hIconSm = NULL;
-		
-	if (!RegisterClassEx(&windowClass))
-	{
-		std::cout << GetLastErrorAsString().c_str() << std::endl;
-	}
-		
-	// Size & Style
-	DWORD style = 
-		WS_CAPTION | WS_SYSMENU |
-		(params.mCanResize ? WS_MAXIMIZEBOX : 0) |
-		(params.mCanResize ? WS_MINIMIZEBOX : 0) |
-		(params.mCanResize ? WS_SIZEBOX : 0);
+    hinstance = mappState.hInstance;
+    HINSTANCE hPrevInstance = mappState.hPrevInstance;
+    LPSTR lpCmdLine = mappState.lpCmdLine;
+    int nCmdShow = mappState.nCmdShow;
 
-	RECT rect = RECT();
-	rect.left = 250;
-	rect.top = 250;
-	rect.right = rect.left + params.mWidth;
-	rect.bottom = rect.top + params.mHeight;
-	AdjustWindowRect(&rect, style, false);
+    mDesc = desc;
 
-	// Window
-	const size_t len = params.mTitle.length() + 1;
-	wchar_t* windowTitle = new wchar_t[len];
-	//std::mbstowcs(windowTitle, params.mTitle.c_str(), len);
-	mbstowcs_s(nullptr, windowTitle, len, params.mTitle.c_str(), len);
-	mWindow = CreateWindowEx(
-		0,
-		mClassName,
-		windowTitle,
-		style,
-		rect.left,
-		rect.top,
-		rect.right - rect.left,
-		rect.bottom - rect.top,
-		nullptr,
-		nullptr,
-		mInstance,
-		reinterpret_cast<LPVOID>(this)
-	);
-	if (!params.mShowBorder)
-	{
-		SetWindowLong(mWindow, GWL_STYLE, 0);
-	}
+    wndClass.cbSize = sizeof(WNDCLASSEX);
+    wndClass.style = CS_HREDRAW | CS_VREDRAW;
+    wndClass.lpfnWndProc = Window::WindowProcStatic;
+    wndClass.cbClsExtra = 0;
+    wndClass.cbWndExtra = WS_EX_NOPARENTNOTIFY;
+    wndClass.hInstance = hinstance;
+    wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wndClass.hbrBackground = hBrush;
+    wndClass.lpszMenuName = NULL;
+    wndClass.lpszClassName = mDesc.name.c_str();
+    wndClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
 
-	ShowWindow(mWindow, SW_SHOW);
-	UpdateWindow(mWindow);
+    if (!RegisterClassEx(&wndClass))
+    {
+        /**
+         * Either an OS Error or a window with the same "name" id will cause
+         * this to fail:
+         */
+        return false;
+    }
 
-	HRESULT hr = CoInitialize(nullptr);
-	if (FAILED(hr))
-	{
-		std::cout << "Failed CoInitialize" << std::endl;
-	}
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+    if (mDesc.fullscreen)
+    {
+        DEVMODE dmScreenSettings;
+        memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
+        dmScreenSettings.dmSize = sizeof(dmScreenSettings);
+        dmScreenSettings.dmPelsWidth = screenWidth;
+        dmScreenSettings.dmPelsHeight = screenHeight;
+        dmScreenSettings.dmBitsPerPel = 32;
+        dmScreenSettings.dmFields =
+            DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+
+        if ((desc.width != screenWidth) && (desc.height != screenHeight))
+        {
+            if (ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) !=
+                DISP_CHANGE_SUCCESSFUL)
+            {
+                // Stay in Windowed mode
+            }
+        }
+    }
+
+    DWORD dwExStyle = 0;
+    DWORD dwStyle = 0;
+
+    if (mDesc.fullscreen)
+    {
+        dwExStyle = WS_EX_APPWINDOW;
+        dwStyle = WS_POPUP | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+    }
+    else
+    {
+        dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+        if (mDesc.frame)
+        {
+            dwStyle = Style::windowed;
+        }
+        else
+        {
+            dwStyle = Style::basicBorderless;
+        }
+    }
+
+    // Store the current thread's DPI-awareness context
+    DPI_AWARENESS_CONTEXT previousDpiContext = SetThreadDpiAwarenessContext(
+        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+    RECT windowRect;
+    windowRect.left = mDesc.x;
+    windowRect.top = mDesc.y;
+    windowRect.right = mDesc.fullscreen ? (long)screenWidth : (long)desc.width;
+    windowRect.bottom =
+        mDesc.fullscreen ? (long)screenHeight : (long)desc.height;
+
+    AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
+
+    _windowBeingCreated = this;
+    hwnd = CreateWindowEx(0, mDesc.name.c_str(), mDesc.title.c_str(), dwStyle,
+                          0, 0, windowRect.right - windowRect.left,
+                          windowRect.bottom - windowRect.top, NULL, NULL,
+                          hinstance, NULL);
+
+    BOOL isNCRenderingEnabled{TRUE};
+    DwmSetWindowAttribute(hwnd, DWMWA_NCRENDERING_ENABLED,
+                          &isNCRenderingEnabled, sizeof(isNCRenderingEnabled));
+
+    if (!hwnd)
+    {
+        // Failed to create window...
+        return false;
+    }
+
+    if (!mDesc.fullscreen)
+    {
+        // Adjust size to match DPI
+        int iDpi = GetDpiForWindow(hwnd);
+        if (iDpi != USER_DEFAULT_SCREEN_DPI)
+        {
+            windowRect.bottom =
+                MulDiv(windowRect.bottom, iDpi, USER_DEFAULT_SCREEN_DPI);
+            windowRect.right =
+                MulDiv(windowRect.right, iDpi, USER_DEFAULT_SCREEN_DPI);
+        }
+        unsigned x = (GetSystemMetrics(SM_CXSCREEN) - windowRect.right) / 2;
+        unsigned y = (GetSystemMetrics(SM_CYSCREEN) - windowRect.bottom) / 2;
+
+        // Center on screen
+        SetWindowPos(hwnd, 0, x, y, windowRect.right, windowRect.bottom, 0);
+    }
+
+    if (mDesc.visible)
+    {
+        ShowWindow(hwnd, SW_SHOW);
+        SetForegroundWindow(hwnd);
+        SetFocus(hwnd);
+    }
+
+    static const DWM_BLURBEHIND blurBehind{{0}, {TRUE}, {NULL}, {TRUE}};
+    DwmEnableBlurBehindWindow(hwnd, &blurBehind);
+    static const MARGINS shadow_state[2]{{0, 0, 0, 0}, {1, 1, 1, 1}};
+    DwmExtendFrameIntoClientArea(hwnd, &shadow_state[0]);
+
+    RegisterWindowMessage("TaskbarButtonCreated");
+    HRESULT hrf =
+        CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
+                         IID_ITaskbarList3, (LPVOID*)&mTaskbarList);
+    setProgress(0.0f);
+
+    // FlashWindow(hwnd, true);
+    // MoveWindow(hwnd, 0, 0, desc.width,
+    //           desc.height + 8, true);
+
+    return true;
 }
 
-WindowWin32::~WindowWin32()
+void Window::updateDesc(WindowDesc& desc)
 {
-	UnregisterClass(mClassName, mInstance);
+    windowRect.left = mDesc.x;
+    windowRect.top = mDesc.y;
+    windowRect.right = (long)desc.width;
+    windowRect.bottom = (long)desc.height;
 
-	CoUninitialize();
+    AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
+
+    SetWindowPos(hwnd, 0, desc.x, desc.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 }
 
-void WindowWin32::onUpdate(const float& dt)
+void Window::minimize() { ShowWindow(hwnd, SW_MINIMIZE); }
+
+void Window::maximize()
 {
-	MSG msg = MSG();
-
-	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-	{
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
-	}
-
-	// Gamepad
-	DWORD dwResult;
-	for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
-	{
-		XINPUT_STATE state;
-		ZeroMemory(&state, sizeof(XINPUT_STATE));
-
-		// Simply get the state of the controller from XInput.
-		dwResult = XInputGetState(i, &state);
-
-		if (dwResult == ERROR_SUCCESS)
-		{
-			// Input Joysticks
-				
-			{
-				float inMin = -32768.0f;
-				float inMax = 32768.0f;
-				float outMin = -1.0f;
-				float outMax = 1.0f;
-
-				// Map the input values so they will be from -1 to 1 instead of inMin to inMax
-				float x = ((float)state.Gamepad.sThumbLX - inMin)* (outMax - outMin) / (inMax - inMin) + outMin;
-				float y = ((float)state.Gamepad.sThumbLY - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-
-				// Check for deadzone with the nonmapped value
-				if (abs((float)state.Gamepad.sThumbLX) > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE ||
-					abs((float)state.Gamepad.sThumbLY) > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
-				{
-					mapp::GamepadLeftJoystickEvent event = mapp::GamepadLeftJoystickEvent(x, y, i);
-					mEventCallback(event);
-				}
-
-				x = y = 0;
-				x = ((float)state.Gamepad.sThumbRX - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-				y = ((float)state.Gamepad.sThumbRY - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-
-				if (abs((float)state.Gamepad.sThumbRX) > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE || 
-					abs((float)state.Gamepad.sThumbRY) > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)
-				{
-					mapp::GamepadRightJoystickEvent event = mapp::GamepadRightJoystickEvent(x, y, i);
-					mEventCallback(event);
-				}
-					
-			}
-
-			// Input Triggers
-				
-			{
-				float inMin = -255.0f;
-				float inMax = 255.0f;
-				float outMin = -1.0f;
-				float outMax = 1.0f;
-
-				// Map the input values so they will be from -1 to 1 instead of inMin to inMax
-				float x = ((float)state.Gamepad.bLeftTrigger - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-					
-				// Check for deadzone with the nonmapped value
-				if (abs((float)state.Gamepad.bLeftTrigger) > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
-				{
-					mapp::GamepadLeftTriggerEvent event = mapp::GamepadLeftTriggerEvent(x, i);
-					mEventCallback(event);
-				}
-
-				x = 0;
-				x = ((float)state.Gamepad.bRightTrigger - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-	
-
-				if (abs((float)state.Gamepad.bRightTrigger) > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
-				{
-					mapp::GamepadRightTriggerEvent event = mapp::GamepadRightTriggerEvent(x, i);
-					mEventCallback(event);
-				}
-
-			}
-
-			// Input Buttons
-			static bool wasDown = false;
-			static uint64_t keyCode = 0;
-			if (state.Gamepad.wButtons != 0)
-			{
-				if (wasDown)
-				{
-						
-					{
-						keyCode = state.Gamepad.wButtons;
-
-						mapp::GamepadKeyPressingEvent event = mapp::GamepadKeyPressingEvent(keyCode, i);
-						mEventCallback(event);
-					}
-				}
-				else
-				{
-						
-					{
-						wasDown = true;
-
-						keyCode = state.Gamepad.wButtons;
-
-						mapp::GamepadKeyPressedEvent event = mapp::GamepadKeyPressedEvent(keyCode, i);
-						mEventCallback(event);
-					}
-				}
-			}
-			else if (wasDown)
-			{
-					
-				{
-					wasDown = false;
-
-					mapp::GamepadKeyReleasedEvent event = mapp::GamepadKeyReleasedEvent(keyCode, i);
-					mEventCallback(event);
-				}
-			}
-		}
-	}
+    if (!IsZoomed(hwnd))
+    {
+        ShowWindow(hwnd, SW_MAXIMIZE);
+    }
+    else
+    {
+        ShowWindow(hwnd, SW_RESTORE);
+    }
 }
 
-bool WindowWin32::setFullscreen(const bool enable)
+void Window::close()
 {
-	bool isChangeSuccessful;
-
-	HDC windowHDC = GetDC(mWindow);
-	int fullscreenWidth = GetDeviceCaps(windowHDC, DESKTOPHORZRES);
-	int fullscreenHeight = GetDeviceCaps(windowHDC, DESKTOPVERTRES);
-
-	// Fullscreen
-	if (enable)
-	{
-		int colourBits = GetDeviceCaps(windowHDC, BITSPIXEL);
-		int refreshRate = GetDeviceCaps(windowHDC, VREFRESH);
-
-		DEVMODE fullscreenSettings = DEVMODE();
-
-		EnumDisplaySettings(NULL, 0, &fullscreenSettings);
-		fullscreenSettings.dmPelsWidth = fullscreenWidth;
-		fullscreenSettings.dmPelsHeight = fullscreenHeight;
-		fullscreenSettings.dmBitsPerPel = colourBits;
-		fullscreenSettings.dmDisplayFrequency = refreshRate;
-		fullscreenSettings.dmFields = DM_PELSWIDTH |
-			DM_PELSHEIGHT |
-			DM_BITSPERPEL |
-			DM_DISPLAYFREQUENCY;
-
-		SetWindowLongPtr(mWindow, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_TOPMOST);
-		SetWindowLongPtr(mWindow, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-		SetWindowPos(mWindow, HWND_TOPMOST, 0, 0, fullscreenWidth, fullscreenHeight, SWP_SHOWWINDOW);
-		isChangeSuccessful = ChangeDisplaySettings(&fullscreenSettings, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL;
-		ShowWindow(mWindow, SW_MAXIMIZE);
-
-		// Resize event
-			
-		{
-			mapp::WindowResizeEvent event = mapp::WindowResizeEvent(fullscreenWidth, fullscreenHeight);
-			mEventCallback(event);
-		}
-			
-	}
-	else
-	{
-		SetWindowLongPtr(mWindow, GWL_EXSTYLE, WS_EX_LEFT);
-		SetWindowLongPtr(mWindow, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
-		isChangeSuccessful = ChangeDisplaySettings(NULL, CDS_RESET) == DISP_CHANGE_SUCCESSFUL;
-		SetWindowPos(mWindow, HWND_NOTOPMOST, getParams().mWidth, getParams().mHeight, getParams().mWidth + 0, getParams().mHeight + 0, SWP_SHOWWINDOW);
-		ShowWindow(mWindow, SW_RESTORE);
-	}
-
-	mIsFullscreen = enable;
-
-	return isChangeSuccessful;
+    if (hwnd != nullptr)
+    {
+        DestroyWindow(hwnd);
+        hwnd = nullptr;
+    }
 }
 
-}	// namespace mapp
+void Window::trackEventsAsync(
+    const std::function<void(const mapp::Event e)>& fun)
+{
+    mCallback = fun;
+}
 
-#endif	// ifdef MAPP_PLATFORM_WIN32
+void Window::setProgress(float progress)
+{
+    unsigned max = 10000;
+    unsigned cur = (unsigned)(progress * (float)max);
+    mTaskbarList->SetProgressValue(hwnd, cur, max);
+}
+
+void Window::showMouse(bool show) { ShowCursor(show ? TRUE : FALSE); }
+
+float Window::getDpiScale() const
+{
+    int currentDpi = GetDpiForWindow(hwnd);
+    int defaultDpi = USER_DEFAULT_SCREEN_DPI;
+
+    return static_cast<float>(currentDpi) / static_cast<float>(defaultDpi);
+}
+
+std::string Window::getTitle() const
+{
+    char str[1024];
+    memset(str, 0, sizeof(char) * 1024);
+    GetWindowTextA(hwnd, str, 1024);
+    std::string outStr = std::string(str);
+    return outStr;
+}
+
+void Window::setTitle(std::string title)
+{
+    mDesc.title = title;
+    SetWindowText(hwnd, mDesc.title.c_str());
+}
+
+void Window::setPosition(unsigned x, unsigned y)
+{
+    SetWindowPos(hwnd, 0, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+    mDesc.x = x;
+    mDesc.y = y;
+}
+
+void Window::setSize(unsigned width, unsigned height)
+{
+    RECT rect, frame, border;
+    GetWindowRect(hwnd, &rect);
+    DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &frame, sizeof(RECT));
+
+    border.left = frame.left - rect.left;
+    border.top = frame.top - rect.top;
+    border.right = rect.right - frame.right;
+    border.bottom = rect.bottom - frame.bottom;
+
+    int titlebarHeight = (GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) +
+        GetSystemMetrics(SM_CXPADDEDBORDER));
+
+    SetWindowPos(hwnd, nullptr, -1, -1, width + border.right + border.left, height + border.top + border.bottom + titlebarHeight,
+                 SWP_NOMOVE | SWP_NOREDRAW);
+}
+
+// clang-format off
+unsigned Window::getBackgroundColor()
+{
+    return mBackgroundColor;
+}
+
+void Window::setBackgroundColor(unsigned color)
+{
+    mBackgroundColor = color;
+}
+
+// clang-format on
+
+UVec2 Window::getPosition() const
+{
+    RECT lpRect;
+    GetWindowRect(hwnd, &lpRect);
+    return UVec2(lpRect.left, lpRect.top);
+}
+
+UVec2 Window::getWindowSize() const
+{
+    RECT lpRect;
+    DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &lpRect, sizeof(lpRect));
+    int titlebarHeight = (GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CXPADDEDBORDER));
+    return UVec2(lpRect.right - lpRect.left, lpRect.bottom - lpRect.top - titlebarHeight);
+}
+
+UVec2 Window::getCurrentDisplaySize() const
+{
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    UVec2 r = UVec2(static_cast<unsigned>(screenWidth),
+                    static_cast<unsigned>(screenHeight));
+    return r;
+}
+
+UVec2 Window::getCurrentDisplayPosition() const
+{
+    WINDOWPLACEMENT lpwndpl = {0};
+    GetWindowPlacement(hwnd, &lpwndpl);
+    UVec2 r = UVec2(lpwndpl.ptMinPosition.x, lpwndpl.ptMinPosition.y);
+    return r;
+}
+
+void Window::setMousePosition(unsigned x, unsigned y) { SetCursorPos(x, y); }
+
+HINSTANCE Window::getHinstance() { return hinstance; }
+
+HWND Window::getHwnd() { return hwnd; }
+
+void Window::executeEventCallback(const mapp::Event e)
+{
+    if (mCallback) mCallback(e);
+}
+
+LRESULT CALLBACK Window::WindowProcStatic(HWND hwnd, UINT msg, WPARAM wparam,
+                                          LPARAM lparam)
+{
+    Window* _this;
+    if (_windowBeingCreated != nullptr)
+    {
+        _hwndMap.emplace(hwnd, _windowBeingCreated);
+        _windowBeingCreated->hwnd = hwnd;
+        _this = _windowBeingCreated;
+        _windowBeingCreated = nullptr;
+    }
+    else
+    {
+        auto existing = _hwndMap.find(hwnd);
+        _this = existing->second;
+    }
+
+    return _this->WindowProc(msg, wparam, lparam);
+}
+
+LRESULT Window::WindowProc(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    MSG message;
+    message.hwnd = hwnd;
+    message.lParam = lparam;
+    message.wParam = wparam;
+    message.message = msg;
+    message.time = 0;
+
+    LRESULT result = mEventQueue->pushEvent(message, this);
+    if (result > 0) return result;
+    return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+}
