@@ -350,11 +350,11 @@ namespace bx
 			);
 	}
 
-	void FilePath::join(const StringView& _str)
+	void FilePath::join(const StringView& _str, bool _addSlash)
 	{
 		char tmp[kMaxFilePath];
 		strCopy(tmp, BX_COUNTOF(tmp), m_filePath);
-		strCat(tmp, BX_COUNTOF(tmp), "/");
+		if (_addSlash) strCat(tmp, BX_COUNTOF(tmp), "/");
 		strCat(tmp, BX_COUNTOF(tmp), _str);
 		set(tmp);
 	}
@@ -429,7 +429,7 @@ namespace bx
 
 	bool FilePath::isEmpty() const
 	{
-		return 0 == strCmp(m_filePath, ".");
+		return 0 == strCmp(m_filePath, ".") || 0 == strCmp(m_filePath, "..");
 	}
 
 } // namespace bx

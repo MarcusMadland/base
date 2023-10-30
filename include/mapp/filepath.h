@@ -78,7 +78,7 @@ namespace bx
 
 		/// Join directory to file path.
 		///
-		void join(const StringView& _str);
+		void join(const StringView& _str, bool _addSlash = true);
 
 		/// Implicitly converts FilePath to StringView.
 		///
