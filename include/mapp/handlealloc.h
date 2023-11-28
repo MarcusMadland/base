@@ -223,6 +223,9 @@ namespace bx
 		///
 		uint16_t find(KeyT _key) const;
 
+		//
+		KeyT findByHandle(uint16_t _handle) const;
+
 		///
 		void reset();
 

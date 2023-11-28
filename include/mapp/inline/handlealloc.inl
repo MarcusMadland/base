@@ -490,6 +490,20 @@ namespace bx
 	}
 
 	template <uint32_t MaxCapacityT, typename KeyT>
+	KeyT HandleHashMapT<MaxCapacityT, KeyT>::findByHandle(uint16_t _handle) const
+	{
+		for (uint32_t i = 0; i < MaxCapacityT; ++i)
+		{
+			if (m_handle[i] == _handle)
+			{
+				return m_key[i];
+			}
+		}
+
+		return 0;
+	}
+
+	template <uint32_t MaxCapacityT, typename KeyT>
 	inline void HandleHashMapT<MaxCapacityT, KeyT>::reset()
 	{
 		memSet(m_handle, 0xff, sizeof(m_handle) );
