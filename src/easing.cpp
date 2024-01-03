@@ -1,11 +1,11 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/easing.h>
+#include <base/easing.h>
 
-namespace bx
+namespace base
 {
 	static const EaseFn s_easeFunc[] =
 	{
@@ -53,11 +53,11 @@ namespace bx
 		easeInOutBounce,
 		easeOutInBounce,
 	};
-	BX_STATIC_ASSERT(BX_COUNTOF(s_easeFunc) == Easing::Count);
+	BASE_STATIC_ASSERT(BASE_COUNTOF(s_easeFunc) == Easing::Count);
 
 	EaseFn getEaseFunc(Easing::Enum _enum)
 	{
 		return s_easeFunc[_enum];
 	}
 
-} // namespace bx
+} // namespace base

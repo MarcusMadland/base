@@ -1,127 +1,127 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/string.h>
-#include <mapp/os.h>
-#include <mapp/uint32_t.h>
+#include <base/string.h>
+#include <base/os.h>
+#include <base/uint32_t.h>
 
-#if BX_CRT_MSVC
+#if BASE_CRT_MSVC
 #	include <direct.h>
 #else
 #	include <unistd.h>
-#endif // BX_CRT_MSVC
+#endif // BASE_CRT_MSVC
 
-#if BX_PLATFORM_WINDOWS || BX_PLATFORM_WINRT
+#if BASE_PLATFORM_WINDOWS || BASE_PLATFORM_WINRT
 #	ifndef WIN32_LEAN_AND_MEAN
 #		define WIN32_LEAN_AND_MEAN
 #	endif // WIN32_LEAN_AND_MEAN
 #	include <windows.h>
 #	include <psapi.h>
-#elif  BX_PLATFORM_ANDROID    \
-	|| BX_PLATFORM_BSD        \
-	|| BX_PLATFORM_EMSCRIPTEN \
-	|| BX_PLATFORM_HAIKU      \
-	|| BX_PLATFORM_HURD       \
-	|| BX_PLATFORM_IOS        \
-	|| BX_PLATFORM_LINUX      \
-	|| BX_PLATFORM_NX         \
-	|| BX_PLATFORM_OSX        \
-	|| BX_PLATFORM_PS4        \
-	|| BX_PLATFORM_RPI
+#elif  BASE_PLATFORM_ANDROID    \
+	|| BASE_PLATFORM_BSD        \
+	|| BASE_PLATFORM_EMSCRIPTEN \
+	|| BASE_PLATFORM_HAIKU      \
+	|| BASE_PLATFORM_HURD       \
+	|| BASE_PLATFORM_IOS        \
+	|| BASE_PLATFORM_LINUX      \
+	|| BASE_PLATFORM_NX         \
+	|| BASE_PLATFORM_OSX        \
+	|| BASE_PLATFORM_PS4        \
+	|| BASE_PLATFORM_RPI
 #	include <sched.h> // sched_yield
-#	if BX_PLATFORM_BSD       \
-	|| BX_PLATFORM_HAIKU     \
-	|| BX_PLATFORM_IOS       \
-	|| BX_PLATFORM_OSX       \
-	|| BX_PLATFORM_PS4
+#	if BASE_PLATFORM_BSD       \
+	|| BASE_PLATFORM_HAIKU     \
+	|| BASE_PLATFORM_IOS       \
+	|| BASE_PLATFORM_OSX       \
+	|| BASE_PLATFORM_PS4
 #		include <pthread.h> // mach_port_t
-#	endif // BX_PLATFORM_*
+#	endif // BASE_PLATFORM_*
 
 #	include <time.h> // nanosleep
-#	if !BX_PLATFORM_PS4
+#	if !BASE_PLATFORM_PS4
 #		include <dlfcn.h> // dlopen, dlclose, dlsym
-#	endif // !BX_PLATFORM_PS4
+#	endif // !BASE_PLATFORM_PS4
 
-#	if BX_PLATFORM_ANDROID
+#	if BASE_PLATFORM_ANDROID
 #		include <malloc.h> // mallinfo
-#	elif   BX_PLATFORM_LINUX     \
-		|| BX_PLATFORM_RPI
+#	elif   BASE_PLATFORM_LINUX     \
+		|| BASE_PLATFORM_RPI
 #		include <stdio.h>  // fopen
 #		include <unistd.h> // syscall
 #		include <sys/syscall.h>
-#	elif   BX_PLATFORM_HAIKU
+#	elif   BASE_PLATFORM_HAIKU
 #		include <stdio.h>  // fopen
 #		include <unistd.h> // syscall
-#	elif BX_PLATFORM_OSX
+#	elif BASE_PLATFORM_OSX
 #		include <mach/mach.h> // mach_task_basic_info
-#	elif BX_PLATFORM_HURD
+#	elif BASE_PLATFORM_HURD
 #		include <stdio.h>           // fopen
 #		include <pthread/pthread.h> // pthread_self
-#	elif BX_PLATFORM_ANDROID
+#	elif BASE_PLATFORM_ANDROID
 #		include "debug.h" // getTid is not implemented...
-#	endif // BX_PLATFORM_ANDROID
-#endif // BX_PLATFORM_
+#	endif // BASE_PLATFORM_ANDROID
+#endif // BASE_PLATFORM_
 
-namespace bx
+namespace base
 {
 	void sleep(uint32_t _ms)
 	{
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		::Sleep(_ms);
-#elif  BX_PLATFORM_XBOXONE \
-	|| BX_PLATFORM_WINRT   \
-	|| BX_CRT_NONE
-		BX_UNUSED(_ms);
+#elif  BASE_PLATFORM_XBOXONE \
+	|| BASE_PLATFORM_WINRT   \
+	|| BASE_CRT_NONE
+		BASE_UNUSED(_ms);
 		debugOutput("sleep is not implemented"); debugBreak();
 #else
 		timespec req = { (time_t)_ms/1000, (long)( (_ms%1000)*1000000) };
 		timespec rem = { 0, 0 };
 		::nanosleep(&req, &rem);
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 	}
 
 	void yield()
 	{
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		::SwitchToThread();
-#elif  BX_PLATFORM_XBOXONE \
-	|| BX_PLATFORM_WINRT   \
-	|| BX_CRT_NONE
+#elif  BASE_PLATFORM_XBOXONE \
+	|| BASE_PLATFORM_WINRT   \
+	|| BASE_CRT_NONE
 		debugOutput("yield is not implemented"); debugBreak();
 #else
 		::sched_yield();
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 	}
 
 	uint32_t getTid()
 	{
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		return ::GetCurrentThreadId();
-#elif  BX_PLATFORM_LINUX \
-	|| BX_PLATFORM_RPI
+#elif  BASE_PLATFORM_LINUX \
+	|| BASE_PLATFORM_RPI
 		return (pid_t)::syscall(SYS_gettid);
-#elif  BX_PLATFORM_IOS \
-	|| BX_PLATFORM_OSX
+#elif  BASE_PLATFORM_IOS \
+	|| BASE_PLATFORM_OSX
 		return (mach_port_t)::pthread_mach_thread_np(pthread_self() );
-#elif BX_PLATFORM_BSD
+#elif BASE_PLATFORM_BSD
 		return *(uint32_t*)::pthread_self();
-#elif BX_PLATFORM_HURD
+#elif BASE_PLATFORM_HURD
 		return (pthread_t)::pthread_self();
 #else
 		debugOutput("getTid is not implemented"); debugBreak();
 		return 0;
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 	}
 
 	size_t getProcessMemoryUsed()
 	{
-#if BX_PLATFORM_ANDROID
+#if BASE_PLATFORM_ANDROID
 		struct mallinfo mi = mallinfo();
 		return mi.uordblks;
-#elif  BX_PLATFORM_LINUX \
-	|| BX_PLATFORM_HURD
+#elif  BASE_PLATFORM_LINUX \
+	|| BASE_PLATFORM_HURD
 		FILE* file = fopen("/proc/self/statm", "r");
 		if (NULL == file)
 		{
@@ -135,7 +135,7 @@ namespace bx
 			? pages * sysconf(_SC_PAGESIZE)
 			: 0
 			;
-#elif BX_PLATFORM_OSX
+#elif BASE_PLATFORM_OSX
 #	if defined(MACH_TASK_BASIC_INFO)
 		mach_task_basic_info info;
 		mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
@@ -161,7 +161,7 @@ namespace bx
 		}
 
 		return info.resident_size;
-#elif BX_PLATFORM_WINDOWS
+#elif BASE_PLATFORM_WINDOWS
 		PROCESS_MEMORY_COUNTERS pmc;
 		GetProcessMemoryInfo(GetCurrentProcess()
 			, &pmc
@@ -170,25 +170,25 @@ namespace bx
 		return pmc.WorkingSetSize;
 #else
 		return 0;
-#endif // BX_PLATFORM_*
+#endif // BASE_PLATFORM_*
 	}
 
 	void* dlopen(const FilePath& _filePath)
 	{
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		return (void*)::LoadLibraryA(_filePath.getCPtr() );
-#elif  BX_PLATFORM_EMSCRIPTEN \
-	|| BX_PLATFORM_PS4        \
-	|| BX_PLATFORM_XBOXONE    \
-	|| BX_PLATFORM_WINRT      \
-	|| BX_CRT_NONE
-		BX_UNUSED(_filePath);
+#elif  BASE_PLATFORM_EMSCRIPTEN \
+	|| BASE_PLATFORM_PS4        \
+	|| BASE_PLATFORM_XBOXONE    \
+	|| BASE_PLATFORM_WINRT      \
+	|| BASE_CRT_NONE
+		BASE_UNUSED(_filePath);
 		return NULL;
 #else
 		void* so = ::dlopen(_filePath.getCPtr(), RTLD_LOCAL|RTLD_LAZY);
-		BX_WARN(NULL != so, "dlopen failed: \"%s\".", ::dlerror() );
+		BASE_WARN(NULL != so, "dlopen failed: \"%s\".", ::dlerror() );
 		return so;
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 	}
 
 	void dlclose(void* _handle)
@@ -198,17 +198,17 @@ namespace bx
 			return;
 		}
 
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		::FreeLibrary( (HMODULE)_handle);
-#elif  BX_PLATFORM_EMSCRIPTEN \
-	|| BX_PLATFORM_PS4        \
-	|| BX_PLATFORM_XBOXONE    \
-	|| BX_PLATFORM_WINRT      \
-	|| BX_CRT_NONE
-		BX_UNUSED(_handle);
+#elif  BASE_PLATFORM_EMSCRIPTEN \
+	|| BASE_PLATFORM_PS4        \
+	|| BASE_PLATFORM_XBOXONE    \
+	|| BASE_PLATFORM_WINRT      \
+	|| BASE_CRT_NONE
+		BASE_UNUSED(_handle);
 #else
 		::dlclose(_handle);
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 	}
 
 	void* dlsym(void* _handle, const StringView& _symbol)
@@ -217,18 +217,18 @@ namespace bx
 		char* symbol = (char*)alloca(symbolMax);
 		strCopy(symbol, symbolMax, _symbol);
 
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		return (void*)::GetProcAddress( (HMODULE)_handle, symbol);
-#elif  BX_PLATFORM_EMSCRIPTEN \
-	|| BX_PLATFORM_PS4        \
-	|| BX_PLATFORM_XBOXONE    \
-	|| BX_PLATFORM_WINRT      \
-	|| BX_CRT_NONE
-		BX_UNUSED(_handle, symbol);
+#elif  BASE_PLATFORM_EMSCRIPTEN \
+	|| BASE_PLATFORM_PS4        \
+	|| BASE_PLATFORM_XBOXONE    \
+	|| BASE_PLATFORM_WINRT      \
+	|| BASE_CRT_NONE
+		BASE_UNUSED(_handle, symbol);
 		return NULL;
 #else
 		return ::dlsym(_handle, symbol);
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 	}
 
 	bool getEnv(char* _out, uint32_t* _inOutSize, const StringView& _name)
@@ -237,17 +237,17 @@ namespace bx
 		char* name = (char*)alloca(nameMax);
 		strCopy(name, nameMax, _name);
 
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		DWORD len = ::GetEnvironmentVariableA(name, _out, *_inOutSize);
 		bool result = len != 0 && len < *_inOutSize;
 		*_inOutSize = len;
 		return result;
-#elif  BX_PLATFORM_EMSCRIPTEN \
-	|| BX_PLATFORM_PS4        \
-	|| BX_PLATFORM_XBOXONE    \
-	|| BX_PLATFORM_WINRT      \
-	|| BX_CRT_NONE
-		BX_UNUSED(name, _out, _inOutSize);
+#elif  BASE_PLATFORM_EMSCRIPTEN \
+	|| BASE_PLATFORM_PS4        \
+	|| BASE_PLATFORM_XBOXONE    \
+	|| BASE_PLATFORM_WINRT      \
+	|| BASE_CRT_NONE
+		BASE_UNUSED(name, _out, _inOutSize);
 		return false;
 #else
 		const char* ptr = ::getenv(name);
@@ -266,7 +266,7 @@ namespace bx
 
 		*_inOutSize = len;
 		return result;
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 	}
 
 	void setEnv(const StringView& _name, const StringView& _value)
@@ -283,14 +283,14 @@ namespace bx
 			strCopy(value, valueMax, _value);
 		}
 
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		::SetEnvironmentVariableA(name, value);
-#elif  BX_PLATFORM_EMSCRIPTEN \
-	|| BX_PLATFORM_PS4        \
-	|| BX_PLATFORM_XBOXONE    \
-	|| BX_PLATFORM_WINRT      \
-	|| BX_CRT_NONE
-		BX_UNUSED(name, value);
+#elif  BASE_PLATFORM_EMSCRIPTEN \
+	|| BASE_PLATFORM_PS4        \
+	|| BASE_PLATFORM_XBOXONE    \
+	|| BASE_PLATFORM_WINRT      \
+	|| BASE_CRT_NONE
+		BASE_UNUSED(name, value);
 #else
 		if (NULL != value)
 		{
@@ -300,39 +300,39 @@ namespace bx
 		{
 			::unsetenv(name);
 		}
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 	}
 
 	int chdir(const char* _path)
 	{
-#if BX_PLATFORM_PS4     \
- || BX_PLATFORM_XBOXONE \
- || BX_PLATFORM_WINRT   \
- || BX_CRT_NONE
-		BX_UNUSED(_path);
+#if BASE_PLATFORM_PS4     \
+ || BASE_PLATFORM_XBOXONE \
+ || BASE_PLATFORM_WINRT   \
+ || BASE_CRT_NONE
+		BASE_UNUSED(_path);
 		return -1;
-#elif BX_CRT_MSVC
+#elif BASE_CRT_MSVC
 		return ::_chdir(_path);
 #else
 		return ::chdir(_path);
-#endif // BX_COMPILER_
+#endif // BASE_COMPILER_
 	}
 
 	void* exec(const char* const* _argv)
 	{
-#if BX_PLATFORM_LINUX \
- || BX_PLATFORM_HURD
+#if BASE_PLATFORM_LINUX \
+ || BASE_PLATFORM_HURD
 		pid_t pid = fork();
 
 		if (0 == pid)
 		{
 			int result = execvp(_argv[0], const_cast<char *const*>(&_argv[1]) );
-			BX_UNUSED(result);
+			BASE_UNUSED(result);
 			return NULL;
 		}
 
 		return (void*)uintptr_t(pid);
-#elif BX_PLATFORM_WINDOWS
+#elif BASE_PLATFORM_WINDOWS
 		STARTUPINFOA si;
 		memSet(&si, 0, sizeof(STARTUPINFOA) );
 		si.cb = sizeof(STARTUPINFOA);
@@ -374,9 +374,9 @@ namespace bx
 
 		return NULL;
 #else
-		BX_UNUSED(_argv);
+		BASE_UNUSED(_argv);
 		return NULL;
-#endif // BX_PLATFORM_LINUX || BX_PLATFORM_HURD
+#endif // BASE_PLATFORM_LINUX || BASE_PLATFORM_HURD
 	}
 
 	void exit(int32_t _exitCode)
@@ -384,4 +384,4 @@ namespace bx
 		::exit(_exitCode);
 	}
 
-} // namespace bx
+} // namespace base

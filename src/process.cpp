@@ -1,30 +1,30 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/process.h>
+#include <base/process.h>
 
 #include <stdio.h>
 
-#ifndef BX_CONFIG_CRT_PROCESS
-#	define BX_CONFIG_CRT_PROCESS !(0  \
-			|| BX_CRT_NONE            \
-			|| BX_PLATFORM_EMSCRIPTEN \
-			|| BX_PLATFORM_PS4        \
-			|| BX_PLATFORM_WINRT      \
-			|| BX_PLATFORM_XBOXONE    \
+#ifndef BASE_CONFIG_CRT_PROCESS
+#	define BASE_CONFIG_CRT_PROCESS !(0  \
+			|| BASE_CRT_NONE            \
+			|| BASE_PLATFORM_EMSCRIPTEN \
+			|| BASE_PLATFORM_PS4        \
+			|| BASE_PLATFORM_WINRT      \
+			|| BASE_PLATFORM_XBOXONE    \
 			)
-#endif // BX_CONFIG_CRT_PROCESS
+#endif // BASE_CONFIG_CRT_PROCESS
 
-namespace bx
+namespace base
 {
-#if BX_CONFIG_CRT_PROCESS
+#if BASE_CONFIG_CRT_PROCESS
 
-#if BX_CRT_MSVC
+#if BASE_CRT_MSVC
 #	define popen  _popen
 #	define pclose _pclose
-#endif // BX_CRT_MSVC
+#endif // BASE_CRT_MSVC
 
 	ProcessReader::ProcessReader()
 		: m_file(NULL)
@@ -33,28 +33,28 @@ namespace bx
 
 	ProcessReader::~ProcessReader()
 	{
-		BX_ASSERT(NULL == m_file, "Process not closed!");
+		BASE_ASSERT(NULL == m_file, "Process not closed!");
 	}
 
 	bool ProcessReader::open(const FilePath& _filePath, const StringView& _args, Error* _err)
 	{
-		BX_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors.");
+		BASE_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors.");
 
 		if (NULL != m_file)
 		{
-			BX_ERROR_SET(_err, kErrorReaderWriterAlreadyOpen, "ProcessReader: File is already open.");
+			BASE_ERROR_SET(_err, kErrorReaderWriterAlreadyOpen, "ProcessReader: File is already open.");
 			return false;
 		}
 
 		char tmp[kMaxFilePath*2] = "\"";
-		strCat(tmp, BX_COUNTOF(tmp), _filePath);
-		strCat(tmp, BX_COUNTOF(tmp), "\" ");
-		strCat(tmp, BX_COUNTOF(tmp), _args);
+		strCat(tmp, BASE_COUNTOF(tmp), _filePath);
+		strCat(tmp, BASE_COUNTOF(tmp), "\" ");
+		strCat(tmp, BASE_COUNTOF(tmp), _args);
 
 		m_file = popen(tmp, "r");
 		if (NULL == m_file)
 		{
-			BX_ERROR_SET(_err, kErrorReaderWriterOpen, "ProcessReader: Failed to open process.");
+			BASE_ERROR_SET(_err, kErrorReaderWriterOpen, "ProcessReader: Failed to open process.");
 			return false;
 		}
 
@@ -63,7 +63,7 @@ namespace bx
 
 	void ProcessReader::close()
 	{
-		BX_ASSERT(NULL != m_file, "Process not open!");
+		BASE_ASSERT(NULL != m_file, "Process not open!");
 		FILE* file = (FILE*)m_file;
 		m_exitCode = pclose(file);
 		m_file = NULL;
@@ -71,7 +71,7 @@ namespace bx
 
 	int32_t ProcessReader::read(void* _data, int32_t _size, Error* _err)
 	{
-		BX_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors."); BX_UNUSED(_err);
+		BASE_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors."); BASE_UNUSED(_err);
 
 		FILE* file = (FILE*)m_file;
 		int32_t size = (int32_t)fread(_data, 1, _size, file);
@@ -79,11 +79,11 @@ namespace bx
 		{
 			if (0 != feof(file) )
 			{
-				BX_ERROR_SET(_err, kErrorReaderWriterEof, "ProcessReader: EOF.");
+				BASE_ERROR_SET(_err, kErrorReaderWriterEof, "ProcessReader: EOF.");
 			}
 			else if (0 != ferror(file) )
 			{
-				BX_ERROR_SET(_err, kErrorReaderWriterRead, "ProcessReader: read error.");
+				BASE_ERROR_SET(_err, kErrorReaderWriterRead, "ProcessReader: read error.");
 			}
 
 			return size >= 0 ? size : 0;
@@ -104,28 +104,28 @@ namespace bx
 
 	ProcessWriter::~ProcessWriter()
 	{
-		BX_ASSERT(NULL == m_file, "Process not closed!");
+		BASE_ASSERT(NULL == m_file, "Process not closed!");
 	}
 
 	bool ProcessWriter::open(const FilePath& _filePath, const StringView& _args, Error* _err)
 	{
-		BX_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors.");
+		BASE_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors.");
 
 		if (NULL != m_file)
 		{
-			BX_ERROR_SET(_err, kErrorReaderWriterAlreadyOpen, "ProcessWriter: File is already open.");
+			BASE_ERROR_SET(_err, kErrorReaderWriterAlreadyOpen, "ProcessWriter: File is already open.");
 			return false;
 		}
 
 		char tmp[kMaxFilePath*2] = "\"";
-		strCat(tmp, BX_COUNTOF(tmp), _filePath);
-		strCat(tmp, BX_COUNTOF(tmp), "\" ");
-		strCat(tmp, BX_COUNTOF(tmp), _args);
+		strCat(tmp, BASE_COUNTOF(tmp), _filePath);
+		strCat(tmp, BASE_COUNTOF(tmp), "\" ");
+		strCat(tmp, BASE_COUNTOF(tmp), _args);
 
 		m_file = popen(tmp, "w");
 		if (NULL == m_file)
 		{
-			BX_ERROR_SET(_err, kErrorReaderWriterOpen, "ProcessWriter: Failed to open process.");
+			BASE_ERROR_SET(_err, kErrorReaderWriterOpen, "ProcessWriter: Failed to open process.");
 			return false;
 		}
 
@@ -134,7 +134,7 @@ namespace bx
 
 	void ProcessWriter::close()
 	{
-		BX_ASSERT(NULL != m_file, "Process not open!");
+		BASE_ASSERT(NULL != m_file, "Process not open!");
 		FILE* file = (FILE*)m_file;
 		m_exitCode = pclose(file);
 		m_file = NULL;
@@ -142,7 +142,7 @@ namespace bx
 
 	int32_t ProcessWriter::write(const void* _data, int32_t _size, Error* _err)
 	{
-		BX_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors."); BX_UNUSED(_err);
+		BASE_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors."); BASE_UNUSED(_err);
 
 		FILE* file = (FILE*)m_file;
 		int32_t size = (int32_t)fwrite(_data, 1, _size, file);
@@ -150,7 +150,7 @@ namespace bx
 		{
 			if (0 != ferror(file) )
 			{
-				BX_ERROR_SET(_err, kErrorReaderWriterWrite, "ProcessWriter: write error.");
+				BASE_ERROR_SET(_err, kErrorReaderWriterWrite, "ProcessWriter: write error.");
 			}
 
 			return size >= 0 ? size : 0;
@@ -163,6 +163,6 @@ namespace bx
 	{
 		return m_exitCode;
 	}
-#endif // BX_CONFIG_CRT_PROCESS
+#endif // BASE_CONFIG_CRT_PROCESS
 
-} // namespace bx
+} // namespace base

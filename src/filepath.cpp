@@ -1,30 +1,30 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/file.h>
-#include <mapp/os.h>
-#include <mapp/readerwriter.h>
+#include <base/file.h>
+#include <base/os.h>
+#include <base/readerwriter.h>
 
-#if !BX_CRT_NONE
-#	if BX_CRT_MSVC
+#if !BASE_CRT_NONE
+#	if BASE_CRT_MSVC
 #		include <direct.h>   // _getcwd
 #	else
 #		include <unistd.h>   // getcwd
-#	endif // BX_CRT_MSVC
-#endif // !BX_CRT_NONE
+#	endif // BASE_CRT_MSVC
+#endif // !BASE_CRT_NONE
 
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 #if !defined(GetModuleFileName)
 extern "C" __declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(void* _module, char* _outFilePath, unsigned long _size);
 #endif
 extern "C" __declspec(dllimport) unsigned long __stdcall GetTempPathA(unsigned long _max, char* _outFilePath);
-#elif BX_PLATFORM_OSX
+#elif BASE_PLATFORM_OSX
 extern "C" int _NSGetExecutablePath(char* _buf, uint32_t* _bufSize);
-#endif // BX_PLATFORM_WINDOWS
+#endif // BASE_PLATFORM_WINDOWS
 
-namespace bx
+namespace base
 {
 	static bool isPathSeparator(char _ch)
 	{
@@ -121,7 +121,7 @@ namespace bx
 
 					break;
 				}
-				BX_FALLTHROUGH;
+				BASE_FALLTHROUGH;
 
 			default:
 				if ( ( rooted && slashIdx+1 != size)
@@ -175,17 +175,17 @@ namespace bx
 
 	static char* pwd(char* _buffer, uint32_t _size)
 	{
-#if BX_PLATFORM_PS4     \
- || BX_PLATFORM_XBOXONE \
- || BX_PLATFORM_WINRT   \
- || BX_CRT_NONE
-		BX_UNUSED(_buffer, _size);
+#if BASE_PLATFORM_PS4     \
+ || BASE_PLATFORM_XBOXONE \
+ || BASE_PLATFORM_WINRT   \
+ || BASE_CRT_NONE
+		BASE_UNUSED(_buffer, _size);
 		return NULL;
-#elif BX_CRT_MSVC
+#elif BASE_CRT_MSVC
 		return ::_getcwd(_buffer, (int32_t)_size);
 #else
 		return ::getcwd(_buffer, _size);
-#endif // BX_PLATFORM_*
+#endif // BASE_PLATFORM_*
 	}
 
 	static bool getCurrentPath(char* _out, uint32_t* _inOutSize)
@@ -202,12 +202,12 @@ namespace bx
 
 	static bool getExecutablePath(char* _out, uint32_t* _inOutSize)
 	{
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		uint32_t len = ::GetModuleFileNameA(NULL, _out, *_inOutSize);
 		bool result = len != 0 && len < *_inOutSize;
 		*_inOutSize = len;
 		return result;
-#elif BX_PLATFORM_LINUX
+#elif BASE_PLATFORM_LINUX
 		char tmp[64];
 		snprintf(tmp, sizeof(tmp), "/proc/%d/exe", getpid() );
 		ssize_t result = readlink(tmp, _out, *_inOutSize);
@@ -217,14 +217,14 @@ namespace bx
 			*_inOutSize = uint32_t(result);
 			return true;
 		}
-#elif BX_PLATFORM_OSX
+#elif BASE_PLATFORM_OSX
 		uint32_t len = *_inOutSize;
 		bool result = _NSGetExecutablePath(_out, &len);
 		if (0 == result)
 		{
 			return true;
 		}
-#endif // BX_PLATFORM_*
+#endif // BASE_PLATFORM_*
 
 		return false;
 	}
@@ -232,16 +232,16 @@ namespace bx
 	static bool getHomePath(char* _out, uint32_t* _inOutSize)
 	{
 		return false
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 			|| getEnv(_out, _inOutSize, "USERPROFILE", FileType::Dir)
-#endif // BX_PLATFORM_WINDOWS
+#endif // BASE_PLATFORM_WINDOWS
 			|| getEnv(_out, _inOutSize, "HOME", FileType::Dir)
 			;
 	}
 
 	static bool getTempPath(char* _out, uint32_t* _inOutSize)
 	{
-#if BX_PLATFORM_WINDOWS
+#if BASE_PLATFORM_WINDOWS
 		uint32_t len = ::GetTempPathA(*_inOutSize, _out);
 		bool result = len != 0 && len < *_inOutSize;
 		*_inOutSize = len;
@@ -282,7 +282,7 @@ namespace bx
 		}
 
 		return false;
-#endif // BX_PLATFORM_*
+#endif // BASE_PLATFORM_*
 	}
 
 	FilePath::FilePath()
@@ -323,7 +323,7 @@ namespace bx
 	{
 		bool ok = false;
 		char tmp[kMaxFilePath];
-		uint32_t len = BX_COUNTOF(tmp);
+		uint32_t len = BASE_COUNTOF(tmp);
 
 		switch (_dir)
 		{
@@ -344,7 +344,7 @@ namespace bx
 	{
 		normalizeFilePath(
 			  m_filePath
-			, BX_COUNTOF(m_filePath)
+			, BASE_COUNTOF(m_filePath)
 			, _filePath.getPtr()
 			, _filePath.getLength()
 			);
@@ -353,9 +353,9 @@ namespace bx
 	void FilePath::join(const StringView& _str, bool _addSlash)
 	{
 		char tmp[kMaxFilePath];
-		strCopy(tmp, BX_COUNTOF(tmp), m_filePath);
-		if (_addSlash) strCat(tmp, BX_COUNTOF(tmp), "/");
-		strCat(tmp, BX_COUNTOF(tmp), _str);
+		strCopy(tmp, BASE_COUNTOF(tmp), m_filePath);
+		if (_addSlash) strCat(tmp, BASE_COUNTOF(tmp), "/");
+		strCat(tmp, BASE_COUNTOF(tmp), _str);
 		set(tmp);
 	}
 
@@ -432,4 +432,4 @@ namespace bx
 		return 0 == strCmp(m_filePath, ".") || 0 == strCmp(m_filePath, "..");
 	}
 
-} // namespace bx
+} // namespace base

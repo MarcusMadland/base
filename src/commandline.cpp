@@ -1,12 +1,12 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/commandline.h>
-#include <mapp/string.h>
+#include <base/commandline.h>
+#include <base/string.h>
 
-namespace bx
+namespace base
 {
 	// Reference(s):
 	// - https://web.archive.org/web/20180629044234/https://msdn.microsoft.com/en-us/library/a1y7w461.aspx
@@ -331,4 +331,4 @@ namespace bx
 		return m_argv[_idx];
 	}
 
-} // namespace bx
+} // namespace base

@@ -3,9 +3,9 @@
  * License: https://github.com/bkaradzic/bnet#license-bsd-2-clause
  */
 
-#include <mapp/url.h>
+#include <base/url.h>
 
-namespace bx
+namespace base
 {
 	UrlView::UrlView()
 	{
@@ -154,4 +154,4 @@ namespace bx
 		_out[ii] = '\0';
 	}
 
-} // namespace bx
+} // namespace base

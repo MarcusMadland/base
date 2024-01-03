@@ -1,38 +1,38 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/mutex.h>
+#include <base/mutex.h>
 
-#if BX_CONFIG_SUPPORTS_THREADING
+#if BASE_CONFIG_SUPPORTS_THREADING
 
-#if BX_CRT_NONE
-#	include <mapp/cpu.h>
+#if BASE_CRT_NONE
+#	include <base/cpu.h>
 #	include "crt0.h"
-#elif  BX_PLATFORM_ANDROID \
-	|| BX_PLATFORM_BSD     \
-	|| BX_PLATFORM_HAIKU   \
-	|| BX_PLATFORM_LINUX   \
-	|| BX_PLATFORM_IOS     \
-	|| BX_PLATFORM_OSX     \
-	|| BX_PLATFORM_PS4     \
-	|| BX_PLATFORM_RPI	   \
-	|| BX_PLATFORM_NX
+#elif  BASE_PLATFORM_ANDROID \
+	|| BASE_PLATFORM_BSD     \
+	|| BASE_PLATFORM_HAIKU   \
+	|| BASE_PLATFORM_LINUX   \
+	|| BASE_PLATFORM_IOS     \
+	|| BASE_PLATFORM_OSX     \
+	|| BASE_PLATFORM_PS4     \
+	|| BASE_PLATFORM_RPI	   \
+	|| BASE_PLATFORM_NX
 #	include <pthread.h>
-#elif  BX_PLATFORM_WINDOWS \
-	|| BX_PLATFORM_WINRT   \
-	|| BX_PLATFORM_XBOXONE
+#elif  BASE_PLATFORM_WINDOWS \
+	|| BASE_PLATFORM_WINRT   \
+	|| BASE_PLATFORM_XBOXONE
 #	ifndef WIN32_LEAN_AND_MEAN
 #		define WIN32_LEAN_AND_MEAN
 #	endif // WIN32_LEAN_AND_MEAN
 #	include <windows.h>
 #	include <errno.h>
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 
-namespace bx
+namespace base
 {
-#if BX_CRT_NONE
+#if BASE_CRT_NONE
 	struct State
 	{
 		enum Enum
@@ -45,7 +45,7 @@ namespace bx
 
 	Mutex::Mutex()
 	{
-		BX_STATIC_ASSERT(sizeof(int32_t) <= sizeof(m_internal) );
+		BASE_STATIC_ASSERT(sizeof(int32_t) <= sizeof(m_internal) );
 
 		uint32_t* futex = (uint32_t*)m_internal;
 		*futex = State::Unlocked;
@@ -82,9 +82,9 @@ namespace bx
 
 #else
 
-#	if BX_PLATFORM_WINDOWS \
-	|| BX_PLATFORM_XBOXONE \
-	|| BX_PLATFORM_WINRT
+#	if BASE_PLATFORM_WINDOWS \
+	|| BASE_PLATFORM_XBOXONE \
+	|| BASE_PLATFORM_WINRT
 	typedef CRITICAL_SECTION pthread_mutex_t;
 	typedef unsigned pthread_mutexattr_t;
 
@@ -107,11 +107,11 @@ namespace bx
 
 	inline int pthread_mutex_init(pthread_mutex_t* _mutex, pthread_mutexattr_t* /*_attr*/)
 	{
-#		if BX_PLATFORM_WINRT
+#		if BASE_PLATFORM_WINRT
 		InitializeCriticalSectionEx(_mutex, 4000, 0);   // docs recommend 4000 spincount as sane default
 #		else
 		InitializeCriticalSection(_mutex);
-#		endif // BX_PLATFORM_
+#		endif // BASE_PLATFORM_
 		return 0;
 	}
 
@@ -120,21 +120,21 @@ namespace bx
 		DeleteCriticalSection(_mutex);
 		return 0;
 	}
-#	endif // BX_PLATFORM_
+#	endif // BASE_PLATFORM_
 
 	Mutex::Mutex()
 	{
-		BX_STATIC_ASSERT(sizeof(pthread_mutex_t) <= sizeof(m_internal) );
+		BASE_STATIC_ASSERT(sizeof(pthread_mutex_t) <= sizeof(m_internal) );
 
 		pthread_mutexattr_t attr;
 
-#	if BX_PLATFORM_WINDOWS \
-	|| BX_PLATFORM_XBOXONE \
-	|| BX_PLATFORM_WINRT
+#	if BASE_PLATFORM_WINDOWS \
+	|| BASE_PLATFORM_XBOXONE \
+	|| BASE_PLATFORM_WINRT
 #	else
 		pthread_mutexattr_init(&attr);
 		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-#	endif // BX_PLATFORM_
+#	endif // BASE_PLATFORM_
 
 		pthread_mutex_t* handle = (pthread_mutex_t*)m_internal;
 		pthread_mutex_init(handle, &attr);
@@ -157,13 +157,13 @@ namespace bx
 		pthread_mutex_t* handle = (pthread_mutex_t*)m_internal;
 		pthread_mutex_unlock(handle);
 	}
-#endif // BX_CRT_NONE
+#endif // BASE_CRT_NONE
 
-} // namespace bx
+} // namespace base
 
 #else
 
-namespace bx
+namespace base
 {
 	Mutex::Mutex()
 	{
@@ -181,6 +181,6 @@ namespace bx
 	{
 	}
 
-} // namespace bx
+} // namespace base
 
-#endif // BX_CONFIG_SUPPORTS_THREADING
+#endif // BASE_CONFIG_SUPPORTS_THREADING

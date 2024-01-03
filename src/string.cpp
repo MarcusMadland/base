@@ -1,14 +1,14 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/allocator.h>
-#include <mapp/file.h>
-#include <mapp/hash.h>
-#include <mapp/string.h>
+#include <base/allocator.h>
+#include <base/file.h>
+#include <base/hash.h>
+#include <base/string.h>
 
-namespace bx
+namespace base
 {
 	inline bool isInRange(char _ch, char _from, char _to)
 	{
@@ -304,9 +304,9 @@ namespace bx
 
 	inline int32_t strCopy(char* _dst, int32_t _dstSize, const char* _src, int32_t _num)
 	{
-		BX_ASSERT(NULL != _dst, "_dst can't be NULL!");
-		BX_ASSERT(NULL != _src, "_src can't be NULL!");
-		BX_ASSERT(0 < _dstSize, "_dstSize can't be 0!");
+		BASE_ASSERT(NULL != _dst, "_dst can't be NULL!");
+		BASE_ASSERT(NULL != _src, "_src can't be NULL!");
+		BASE_ASSERT(0 < _dstSize, "_dstSize can't be 0!");
 
 		const int32_t len = strLen(_src, _num);
 		const int32_t max = _dstSize-1;
@@ -324,9 +324,9 @@ namespace bx
 
 	inline int32_t strCat(char* _dst, int32_t _dstSize, const char* _src, int32_t _num)
 	{
-		BX_ASSERT(NULL != _dst, "_dst can't be NULL!");
-		BX_ASSERT(NULL != _src, "_src can't be NULL!");
-		BX_ASSERT(0 < _dstSize, "_dstSize can't be 0!");
+		BASE_ASSERT(NULL != _dst, "_dst can't be NULL!");
+		BASE_ASSERT(NULL != _src, "_src can't be NULL!");
+		BASE_ASSERT(0 < _dstSize, "_dstSize can't be 0!");
 
 		const int32_t max = _dstSize;
 		const int32_t len = strLen(_dst, max);
@@ -1266,7 +1266,7 @@ namespace bx
 		uint8_t idx = 0;
 		double value = double(_value);
 		while (_value != (_value&0x7ff)
-		&&     idx < BX_COUNTOF(s_units) )
+		&&     idx < BASE_COUNTOF(s_units) )
 		{
 			_value /= Kilo;
 			value  *= 1.0/double(Kilo);
@@ -1290,4 +1290,4 @@ namespace bx
 		return prettify<1024, 'i', 'B', toUpper>(_out, _count, _value);
 	}
 
-} // namespace bx
+} // namespace base

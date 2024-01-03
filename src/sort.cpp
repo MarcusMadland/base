@@ -1,11 +1,11 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/sort.h>
+#include <base/sort.h>
 
-namespace bx
+namespace base
 {
 	static void quickSortR(void* _pivot, void* _data, uint32_t _num, uint32_t _stride, const ComparisonFn _fn)
 	{
@@ -82,7 +82,7 @@ namespace bx
 		for (uint32_t ii = 1; ii < _num; ++ii)
 		{
 			int32_t result = _fn(&data[last*_stride], &data[ii*_stride]);
-			BX_ASSERT(0 >= result, "Performing unique on non-sorted array (ii %d, last %d)!", ii, last);
+			BASE_ASSERT(0 >= result, "Performing unique on non-sorted array (ii %d, last %d)!", ii, last);
 
 			if (0 > result)
 			{
@@ -170,5 +170,5 @@ namespace bx
 		return ~offset;
 	}
 
-} // namespace bx
+} // namespace base
 

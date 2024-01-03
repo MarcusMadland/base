@@ -1,14 +1,14 @@
 /*
  * Copyright 2011-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/math.h>
-#include <mapp/uint32_t.h>
+#include <base/math.h>
+#include <base/uint32_t.h>
 
-#include <mapp/string.h>
+#include <base/string.h>
 
-namespace bx
+namespace base
 {
 	const float  kFloatInfinity  = bitsToFloat(kFloatExponentMask);
 	const double kDoubleInfinity = bitsToDouble(kDoubleExponentMask);
@@ -29,7 +29,7 @@ namespace bx
 
 	} // namespace
 
-	BX_CONST_FUNC float cos(float _a)
+	BASE_CONST_FUNC float cos(float _a)
 	{
 		const float scaled = _a * 2.0f*kInvPi;
 		const float real   = floor(scaled);
@@ -81,7 +81,7 @@ namespace bx
 
 	} // namespace
 
-	BX_CONST_FUNC float acos(float _a)
+	BASE_CONST_FUNC float acos(float _a)
 	{
 		const float absa   = abs(_a);
 		const float tmp0   = mad(kAcosC3, absa, kAcosC2);
@@ -106,7 +106,7 @@ namespace bx
 
 	} // namespace
 
-	BX_CONST_FUNC float atan2(float _y, float _x)
+	BASE_CONST_FUNC float atan2(float _y, float _x)
 	{
 		const float ax     = abs(_x);
 		const float ay     = abs(_y);
@@ -133,7 +133,7 @@ namespace bx
 		return result;
 	}
 
-	BX_CONST_FUNC float ldexp(float _a, int32_t _b)
+	BASE_CONST_FUNC float ldexp(float _a, int32_t _b)
 	{
 		const uint32_t ftob     = floatToBits(_a);
 		const uint32_t masked   = uint32_and(ftob, kFloatSignMask | kFloatExponentMask);
@@ -171,7 +171,7 @@ namespace bx
 
 	} // namespace
 
-	BX_CONST_FUNC float exp(float _a)
+	BASE_CONST_FUNC float exp(float _a)
 	{
 		if (abs(_a) <= kNearZero)
 		{
@@ -207,7 +207,7 @@ namespace bx
 
 	} // namespace
 
-	BX_CONST_FUNC float log(float _a)
+	BASE_CONST_FUNC float log(float _a)
 	{
 		int32_t exp;
 		float ff = frexp(_a, &exp);
@@ -246,8 +246,8 @@ namespace bx
 		const Vec3 eye  = Handedness::Left == _handedness ? _eye : neg(_eye);
 		const Vec3 view = normalize(sub(_at, eye) );
 
-		Vec3 right = bx::InitNone;
-		Vec3 up    = bx::InitNone;
+		Vec3 right = base::InitNone;
+		Vec3 up    = base::InitNone;
 
 		const Vec3 uxv = cross(_up, view);
 
@@ -794,4 +794,4 @@ namespace bx
 		_rgb[2] = vv * lerp(1.0f, clamp(pz - 1.0f, 0.0f, 1.0f), ss);
 	}
 
-} // namespace bx
+} // namespace base

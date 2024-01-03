@@ -1,17 +1,17 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/allocator.h>
+#include <base/allocator.h>
 
 #include <malloc.h>
 
-#ifndef BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
-#	define BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 8
-#endif // BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
+#ifndef BASE_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
+#	define BASE_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 8
+#endif // BASE_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
 
-namespace bx
+namespace base
 {
 	DefaultAllocator::DefaultAllocator()
 	{
@@ -27,48 +27,48 @@ namespace bx
 		{
 			if (NULL != _ptr)
 			{
-				if (BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT >= _align)
+				if (BASE_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT >= _align)
 				{
 					::free(_ptr);
 					return NULL;
 				}
 
-#	if BX_COMPILER_MSVC
-				BX_UNUSED(_filePath, _line);
+#	if BASE_COMPILER_MSVC
+				BASE_UNUSED(_filePath, _line);
 				_aligned_free(_ptr);
 #	else
 				alignedFree(this, _ptr, _align, Location(_filePath, _line) );
-#	endif // BX_
+#	endif // BASE_
 			}
 
 			return NULL;
 		}
 		else if (NULL == _ptr)
 		{
-			if (BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT >= _align)
+			if (BASE_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT >= _align)
 			{
 				return ::malloc(_size);
 			}
 
-#	if BX_COMPILER_MSVC
-			BX_UNUSED(_filePath, _line);
+#	if BASE_COMPILER_MSVC
+			BASE_UNUSED(_filePath, _line);
 			return _aligned_malloc(_size, _align);
 #	else
 			return alignedAlloc(this, _size, _align, Location(_filePath, _line) );
-#	endif // BX_
+#	endif // BASE_
 		}
 
-		if (BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT >= _align)
+		if (BASE_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT >= _align)
 		{
 			return ::realloc(_ptr, _size);
 		}
 
-#	if BX_COMPILER_MSVC
-		BX_UNUSED(_filePath, _line);
+#	if BASE_COMPILER_MSVC
+		BASE_UNUSED(_filePath, _line);
 		return _aligned_realloc(_ptr, _size, _align);
 #	else
 		return alignedRealloc(this, _ptr, _size, _align, Location(_filePath, _line) );
-#	endif // BX_
+#	endif // BASE_
 	}
 
-} // namespace bx
+} // namespace base

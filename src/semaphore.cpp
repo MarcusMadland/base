@@ -1,58 +1,58 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/semaphore.h>
+#include <base/semaphore.h>
 
-#if BX_CONFIG_SUPPORTS_THREADING
+#if BASE_CONFIG_SUPPORTS_THREADING
 
-#if BX_CRT_NONE
-#elif  BX_PLATFORM_OSX \
-	|| BX_PLATFORM_IOS
+#if BASE_CRT_NONE
+#elif  BASE_PLATFORM_OSX \
+	|| BASE_PLATFORM_IOS
 #	include <dispatch/dispatch.h>
-#elif BX_PLATFORM_POSIX
+#elif BASE_PLATFORM_POSIX
 #	include <errno.h>
 #	include <pthread.h>
 #	include <semaphore.h>
 #	include <time.h>
-#elif  BX_PLATFORM_WINDOWS \
-	|| BX_PLATFORM_WINRT   \
-	|| BX_PLATFORM_XBOXONE
+#elif  BASE_PLATFORM_WINDOWS \
+	|| BASE_PLATFORM_WINRT   \
+	|| BASE_PLATFORM_XBOXONE
 #	ifndef WIN32_LEAN_AND_MEAN
 #		define WIN32_LEAN_AND_MEAN
 #	endif // WIN32_LEAN_AND_MEAN
 #	include <windows.h>
 #	include <limits.h>
-#	if BX_PLATFORM_XBOXONE
+#	if BASE_PLATFORM_XBOXONE
 #		include <synchapi.h>
-#	endif // BX_PLATFORM_XBOXONE
-#endif // BX_PLATFORM_
+#	endif // BASE_PLATFORM_XBOXONE
+#endif // BASE_PLATFORM_
 
-namespace bx
+namespace base
 {
 	struct SemaphoreInternal
 	{
-#if BX_CRT_NONE
+#if BASE_CRT_NONE
 
-#elif  BX_PLATFORM_OSX \
-	|| BX_PLATFORM_IOS
+#elif  BASE_PLATFORM_OSX \
+	|| BASE_PLATFORM_IOS
 		dispatch_semaphore_t m_handle;
-#elif BX_PLATFORM_POSIX
+#elif BASE_PLATFORM_POSIX
 		pthread_mutex_t m_mutex;
 		pthread_cond_t m_cond;
 		int32_t m_count;
-#elif  BX_PLATFORM_WINDOWS \
-	|| BX_PLATFORM_WINRT   \
-	|| BX_PLATFORM_XBOXONE
+#elif  BASE_PLATFORM_WINDOWS \
+	|| BASE_PLATFORM_WINRT   \
+	|| BASE_PLATFORM_XBOXONE
 		HANDLE m_handle;
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 	};
 
-#if BX_CRT_NONE
+#if BASE_CRT_NONE
 	Semaphore::Semaphore()
 	{
-		BX_STATIC_ASSERT(sizeof(SemaphoreInternal) <= sizeof(m_internal) );
+		BASE_STATIC_ASSERT(sizeof(SemaphoreInternal) <= sizeof(m_internal) );
 	}
 
 	Semaphore::~Semaphore()
@@ -61,24 +61,24 @@ namespace bx
 
 	void Semaphore::post(uint32_t _count)
 	{
-		BX_UNUSED(_count);
+		BASE_UNUSED(_count);
 	}
 
 	bool Semaphore::wait(int32_t _msecs)
 	{
-		BX_UNUSED(_msecs);
+		BASE_UNUSED(_msecs);
 		return false;
 	}
-#elif  BX_PLATFORM_OSX \
-	|| BX_PLATFORM_IOS
+#elif  BASE_PLATFORM_OSX \
+	|| BASE_PLATFORM_IOS
 
 	Semaphore::Semaphore()
 	{
-		BX_STATIC_ASSERT(sizeof(SemaphoreInternal) <= sizeof(m_internal) );
+		BASE_STATIC_ASSERT(sizeof(SemaphoreInternal) <= sizeof(m_internal) );
 
 		SemaphoreInternal* si = (SemaphoreInternal*)m_internal;
 		si->m_handle = dispatch_semaphore_create(0);
-		BX_ASSERT(NULL != si->m_handle, "dispatch_semaphore_create failed.");
+		BASE_ASSERT(NULL != si->m_handle, "dispatch_semaphore_create failed.");
 	}
 
 	Semaphore::~Semaphore()
@@ -108,7 +108,7 @@ namespace bx
 		return !dispatch_semaphore_wait(si->m_handle, dt);
 	}
 
-#elif BX_PLATFORM_POSIX
+#elif BASE_PLATFORM_POSIX
 
 	uint64_t toNs(const timespec& _ts)
 	{
@@ -134,7 +134,7 @@ namespace bx
 
 	Semaphore::Semaphore()
 	{
-		BX_STATIC_ASSERT(sizeof(SemaphoreInternal) <= sizeof(m_internal) );
+		BASE_STATIC_ASSERT(sizeof(SemaphoreInternal) <= sizeof(m_internal) );
 
 		SemaphoreInternal* si = (SemaphoreInternal*)m_internal;
 		si->m_count = 0;
@@ -142,12 +142,12 @@ namespace bx
 		int result;
 
 		result = pthread_mutex_init(&si->m_mutex, NULL);
-		BX_ASSERT(0 == result, "pthread_mutex_init %d", result);
+		BASE_ASSERT(0 == result, "pthread_mutex_init %d", result);
 
 		result = pthread_cond_init(&si->m_cond, NULL);
-		BX_ASSERT(0 == result, "pthread_cond_init %d", result);
+		BASE_ASSERT(0 == result, "pthread_cond_init %d", result);
 
-		BX_UNUSED(result);
+		BASE_UNUSED(result);
 	}
 
 	Semaphore::~Semaphore()
@@ -156,12 +156,12 @@ namespace bx
 
 		int result;
 		result = pthread_cond_destroy(&si->m_cond);
-		BX_ASSERT(0 == result, "pthread_cond_destroy %d", result);
+		BASE_ASSERT(0 == result, "pthread_cond_destroy %d", result);
 
 		result = pthread_mutex_destroy(&si->m_mutex);
-		BX_ASSERT(0 == result, "pthread_mutex_destroy %d", result);
+		BASE_ASSERT(0 == result, "pthread_mutex_destroy %d", result);
 
-		BX_UNUSED(result);
+		BASE_UNUSED(result);
 	}
 
 	void Semaphore::post(uint32_t _count)
@@ -169,20 +169,20 @@ namespace bx
 		SemaphoreInternal* si = (SemaphoreInternal*)m_internal;
 
 		int result = pthread_mutex_lock(&si->m_mutex);
-		BX_ASSERT(0 == result, "pthread_mutex_lock %d", result);
+		BASE_ASSERT(0 == result, "pthread_mutex_lock %d", result);
 
 		for (uint32_t ii = 0; ii < _count; ++ii)
 		{
 			result = pthread_cond_signal(&si->m_cond);
-			BX_ASSERT(0 == result, "pthread_cond_signal %d", result);
+			BASE_ASSERT(0 == result, "pthread_cond_signal %d", result);
 		}
 
 		si->m_count += _count;
 
 		result = pthread_mutex_unlock(&si->m_mutex);
-		BX_ASSERT(0 == result, "pthread_mutex_unlock %d", result);
+		BASE_ASSERT(0 == result, "pthread_mutex_unlock %d", result);
 
-		BX_UNUSED(result);
+		BASE_UNUSED(result);
 	}
 
 	bool Semaphore::wait(int32_t _msecs)
@@ -190,7 +190,7 @@ namespace bx
 		SemaphoreInternal* si = (SemaphoreInternal*)m_internal;
 
 		int result = pthread_mutex_lock(&si->m_mutex);
-		BX_ASSERT(0 == result, "pthread_mutex_lock %d", result);
+		BASE_ASSERT(0 == result, "pthread_mutex_lock %d", result);
 
 		if (-1 == _msecs)
 		{
@@ -221,28 +221,28 @@ namespace bx
 		}
 
 		result = pthread_mutex_unlock(&si->m_mutex);
-		BX_ASSERT(0 == result, "pthread_mutex_unlock %d", result);
+		BASE_ASSERT(0 == result, "pthread_mutex_unlock %d", result);
 
-		BX_UNUSED(result);
+		BASE_UNUSED(result);
 
 		return ok;
 	}
 
-#elif  BX_PLATFORM_WINDOWS \
-	|| BX_PLATFORM_WINRT   \
-	|| BX_PLATFORM_XBOXONE
+#elif  BASE_PLATFORM_WINDOWS \
+	|| BASE_PLATFORM_WINRT   \
+	|| BASE_PLATFORM_XBOXONE
 
 	Semaphore::Semaphore()
 	{
 		SemaphoreInternal* si = (SemaphoreInternal*)m_internal;
 
-#if BX_PLATFORM_WINRT \
-||  BX_PLATFORM_XBOXONE
+#if BASE_PLATFORM_WINRT \
+||  BASE_PLATFORM_XBOXONE
 		si->m_handle = CreateSemaphoreExW(NULL, 0, LONG_MAX, NULL, 0, SEMAPHORE_ALL_ACCESS);
 #else
 		si->m_handle = CreateSemaphoreA(NULL, 0, LONG_MAX, NULL);
 #endif
-		BX_ASSERT(NULL != si->m_handle, "Failed to create Semaphore!");
+		BASE_ASSERT(NULL != si->m_handle, "Failed to create Semaphore!");
 	}
 
 	Semaphore::~Semaphore()
@@ -264,15 +264,15 @@ namespace bx
 		SemaphoreInternal* si = (SemaphoreInternal*)m_internal;
 
 		DWORD milliseconds = (0 > _msecs) ? INFINITE : _msecs;
-#if BX_PLATFORM_WINRT \
-||  BX_PLATFORM_XBOXONE
+#if BASE_PLATFORM_WINRT \
+||  BASE_PLATFORM_XBOXONE
 		return WAIT_OBJECT_0 == WaitForSingleObjectEx(si->m_handle, milliseconds, FALSE);
 #else
 		return WAIT_OBJECT_0 == WaitForSingleObject(si->m_handle, milliseconds);
 #endif
 	}
-#endif // BX_PLATFORM_
+#endif // BASE_PLATFORM_
 
-} // namespace bx
+} // namespace base
 
-#endif // BX_CONFIG_SUPPORTS_THREADING
+#endif // BASE_CONFIG_SUPPORTS_THREADING

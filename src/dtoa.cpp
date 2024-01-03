@@ -1,16 +1,16 @@
 /*
  * Copyright 2010-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/cpu.h>
-#include <mapp/math.h>
-#include <mapp/string.h>
-#include <mapp/uint32_t.h>
+#include <base/cpu.h>
+#include <base/math.h>
+#include <base/string.h>
+#include <base/uint32_t.h>
 
 #include <type_traits>
 
-namespace bx
+namespace base
 {
 	/*
 	 * https://github.com/miloyip/dtoa-benchmark
@@ -73,8 +73,8 @@ namespace bx
 
 		DiyFp operator-(const DiyFp& rhs) const
 		{
-			BX_ASSERT(e == rhs.e, "");
-			BX_ASSERT(f >= rhs.f, "");
+			BASE_ASSERT(e == rhs.e, "");
+			BASE_ASSERT(f >= rhs.f, "");
 			return DiyFp(f - rhs.f, e);
 		}
 
@@ -223,7 +223,7 @@ namespace bx
 		uint32_t index = static_cast<uint32_t>( (k >> 3) + 1);
 		*K = -(-348 + static_cast<int32_t>(index << 3) );	// decimal exponent no need lookup table
 
-		BX_ASSERT(index < sizeof(s_kCachedPowers_F) / sizeof(s_kCachedPowers_F[0]), "");
+		BASE_ASSERT(index < sizeof(s_kCachedPowers_F) / sizeof(s_kCachedPowers_F[0]), "");
 		return DiyFp(s_kCachedPowers_F[index], s_kCachedPowers_E[index]);
 	}
 
@@ -1155,4 +1155,4 @@ namespace bx
 		return true;
 	}
 
-} // namespace bx
+} // namespace base

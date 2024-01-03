@@ -1,13 +1,13 @@
 /*
  * Copyright 2011-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
+ * License: https://github.com/bkaradzic/graphics#license-bsd-2-clause
  */
 
-#include <mapp/rng.h>
-#include <mapp/math.h>
-#include <mapp/bounds.h>
+#include <base/rng.h>
+#include <base/math.h>
+#include <base/bounds.h>
 
-namespace bx
+namespace base
 {
 	Vec3 getCenter(const Aabb& _aabb)
 	{
@@ -627,7 +627,7 @@ namespace bx
 
 	bool intersect(const Ray& _ray, const Capsule& _capsule, Hit* _hit)
 	{
-		BX_STATIC_ASSERT(sizeof(Capsule) == sizeof(Cylinder) );
+		BASE_STATIC_ASSERT(sizeof(Capsule) == sizeof(Cylinder) );
 		return intersect(_ray, *( (const Cylinder*)&_capsule), true, _hit);
 	}
 
@@ -795,9 +795,9 @@ namespace bx
 		const float invDet = 1.0f/det;
 		const float bz = dot(dxo, edge02) * invDet;
 		const float by = dot(dxo, edge10) * invDet;
-		const float bx = 1.0f - by - bz;
+		const float base = 1.0f - by - bz;
 
-		if (0.0f > bx
+		if (0.0f > base
 		||  0.0f > by
 		||  0.0f > bz)
 		{
@@ -1030,10 +1030,10 @@ namespace bx
 			return false;
 		}
 
-		const Vec3 bxaxb = cross(_planeB.normal, axb);
-		const Vec3 axbxa = cross(axb, _planeA.normal);
-		const Vec3 tmp0  = mul(bxaxb, _planeA.dist);
-		const Vec3 tmp1  = mul(axbxa, _planeB.dist);
+		const Vec3 baseaxb = cross(_planeB.normal, axb);
+		const Vec3 axbasea = cross(axb, _planeA.normal);
+		const Vec3 tmp0  = mul(baseaxb, _planeA.dist);
+		const Vec3 tmp1  = mul(axbasea, _planeB.dist);
 		const Vec3 tmp2  = add(tmp0, tmp1);
 
 		_outLine.pos = mul(tmp2, -1.0f/denom);
@@ -1045,15 +1045,15 @@ namespace bx
 	Vec3 intersectPlanes(const Plane& _pa, const Plane& _pb, const Plane& _pc)
 	{
 		const Vec3 axb  = cross(_pa.normal, _pb.normal);
-		const Vec3 bxc  = cross(_pb.normal, _pc.normal);
+		const Vec3 basec  = cross(_pb.normal, _pc.normal);
 		const Vec3 cxa  = cross(_pc.normal, _pa.normal);
-		const Vec3 tmp0 = mul(bxc, _pa.dist);
+		const Vec3 tmp0 = mul(basec, _pa.dist);
 		const Vec3 tmp1 = mul(cxa, _pb.dist);
 		const Vec3 tmp2 = mul(axb, _pc.dist);
 		const Vec3 tmp3 = add(tmp0, tmp1);
 		const Vec3 tmp4 = add(tmp3, tmp2);
 
-		const float denom = dot(_pa.normal, bxc);
+		const float denom = dot(_pa.normal, basec);
 		const Vec3 result = mul(tmp4, -1.0f/denom);
 
 		return result;
@@ -1362,7 +1362,7 @@ namespace bx
 		const Vec3 ay = toYAxis(_srtA.rotation);
 		const Vec3 az = toZAxis(_srtA.rotation);
 
-		const Vec3 bx = toXAxis(_srtB.rotation);
+		const Vec3 base = toXAxis(_srtB.rotation);
 		const Vec3 by = toYAxis(_srtB.rotation);
 		const Vec3 bz = toZAxis(_srtB.rotation);
 
@@ -1370,21 +1370,21 @@ namespace bx
 		calcObbVertices(vertsA, ax, ay, az, InitZero, _srtA.scale);
 
 		Vec3 vertsB[8] = { InitNone, InitNone, InitNone, InitNone, InitNone, InitNone, InitNone, InitNone };
-		calcObbVertices(vertsB, bx, by, bz, sub(_srtB.translation, _srtA.translation), _srtB.scale);
+		calcObbVertices(vertsB, base, by, bz, sub(_srtB.translation, _srtA.translation), _srtB.scale);
 
 		return overlaps(ax,            vertsA, vertsB)
 			&& overlaps(ay,            vertsA, vertsB)
 			&& overlaps(az,            vertsA, vertsB)
-			&& overlaps(bx,            vertsA, vertsB)
+			&& overlaps(base,            vertsA, vertsB)
 			&& overlaps(by,            vertsA, vertsB)
 			&& overlaps(bz,            vertsA, vertsB)
-			&& overlaps(cross(ax, bx), vertsA, vertsB)
+			&& overlaps(cross(ax, base), vertsA, vertsB)
 			&& overlaps(cross(ax, by), vertsA, vertsB)
 			&& overlaps(cross(ax, bz), vertsA, vertsB)
-			&& overlaps(cross(ay, bx), vertsA, vertsB)
+			&& overlaps(cross(ay, base), vertsA, vertsB)
 			&& overlaps(cross(ay, by), vertsA, vertsB)
 			&& overlaps(cross(ay, bz), vertsA, vertsB)
-			&& overlaps(cross(az, bx), vertsA, vertsB)
+			&& overlaps(cross(az, base), vertsA, vertsB)
 			&& overlaps(cross(az, by), vertsA, vertsB)
 			&& overlaps(cross(az, bz), vertsA, vertsB)
 			;
@@ -1465,31 +1465,31 @@ namespace bx
 
 	bool overlap(const Cone& _cone, const Cylinder& _cylinder)
 	{
-		BX_UNUSED(_cone, _cylinder);
+		BASE_UNUSED(_cone, _cylinder);
 		return false;
 	}
 
 	bool overlap(const Cone& _cone, const Capsule& _capsule)
 	{
-		BX_UNUSED(_cone, _capsule);
+		BASE_UNUSED(_cone, _capsule);
 		return false;
 	}
 
 	bool overlap(const Cone& _coneA, const Cone& _coneB)
 	{
-		BX_UNUSED(_coneA, _coneB);
+		BASE_UNUSED(_coneA, _coneB);
 		return false;
 	}
 
 	bool overlap(const Cone& _cone, const Disk& _disk)
 	{
-		BX_UNUSED(_cone, _disk);
+		BASE_UNUSED(_cone, _disk);
 		return false;
 	}
 
 	bool overlap(const Cone& _cone, const Obb& _obb)
 	{
-		BX_UNUSED(_cone, _obb);
+		BASE_UNUSED(_cone, _obb);
 		return false;
 	}
 
@@ -1513,31 +1513,31 @@ namespace bx
 
 	bool overlap(const Cylinder& _cylinder, const Plane& _plane)
 	{
-		BX_UNUSED(_cylinder, _plane);
+		BASE_UNUSED(_cylinder, _plane);
 		return false;
 	}
 
 	bool overlap(const Cylinder& _cylinderA, const Cylinder& _cylinderB)
 	{
-		BX_UNUSED(_cylinderA, _cylinderB);
+		BASE_UNUSED(_cylinderA, _cylinderB);
 		return false;
 	}
 
 	bool overlap(const Cylinder& _cylinder, const Capsule& _capsule)
 	{
-		BX_UNUSED(_cylinder, _capsule);
+		BASE_UNUSED(_cylinder, _capsule);
 		return false;
 	}
 
 	bool overlap(const Cylinder& _cylinder, const Disk& _disk)
 	{
-		BX_UNUSED(_cylinder, _disk);
+		BASE_UNUSED(_cylinder, _disk);
 		return false;
 	}
 
 	bool overlap(const Cylinder& _cylinder, const Obb& _obb)
 	{
-		BX_UNUSED(_cylinder, _obb);
+		BASE_UNUSED(_cylinder, _obb);
 		return false;
 	}
 
@@ -2036,4 +2036,4 @@ namespace bx
 		return overlap(triangle, aabb);
 	}
 
-} // namespace bx
+} // namespace base

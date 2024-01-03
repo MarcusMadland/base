@@ -1,11 +1,11 @@
 /*
  * Copyright 2011-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/mapp/blob/master/LICENSE
+ * License: https://github.com/bkaradzic/base/blob/master/LICENSE
  */
 
-#include <mapp/hash.h>
+#include <base/hash.h>
 
-namespace bx
+namespace base
 {
 
 static const uint32_t s_crcTableIeee[] =
@@ -43,7 +43,7 @@ static const uint32_t s_crcTableIeee[] =
 	0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6, 0xbad03605, 0xcdd70693, 0x54de5729, 0x23d967bf,
 	0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94, 0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d,
 };
-BX_STATIC_ASSERT(BX_COUNTOF(s_crcTableIeee) == 256);
+BASE_STATIC_ASSERT(BASE_COUNTOF(s_crcTableIeee) == 256);
 
 static const uint32_t s_crcTableCastagnoli[] =
 {
@@ -80,7 +80,7 @@ static const uint32_t s_crcTableCastagnoli[] =
 	0xf36e6f75, 0x0105ec76, 0x12551f82, 0xe03e9c81, 0x34f4f86a, 0xc69f7b69, 0xd5cf889d, 0x27a40b9e,
 	0x79b737ba, 0x8bdcb4b9, 0x988c474d, 0x6ae7c44e, 0xbe2da0a5, 0x4c4623a6, 0x5f16d052, 0xad7d5351,
 };
-BX_STATIC_ASSERT(BX_COUNTOF(s_crcTableCastagnoli) == 256);
+BASE_STATIC_ASSERT(BASE_COUNTOF(s_crcTableCastagnoli) == 256);
 
 static const uint32_t s_crcTableKoopman[] =
 {
@@ -117,7 +117,7 @@ static const uint32_t s_crcTableKoopman[] =
 	0xcc9b9520, 0x5a0e51ea, 0x37d3ace9, 0xa1466823, 0xec6856ef, 0x7afd9225, 0x17206f26, 0x81b5abec,
 	0x8d7c12be, 0x1be9d674, 0x76342b77, 0xe0a1efbd, 0xad8fd171, 0x3b1a15bb, 0x56c7e8b8, 0xc0522c72,
 };
-BX_STATIC_ASSERT(BX_COUNTOF(s_crcTableKoopman) == 256);
+BASE_STATIC_ASSERT(BASE_COUNTOF(s_crcTableKoopman) == 256);
 
 static const uint32_t* s_crcTable[] =
 {
@@ -125,7 +125,7 @@ static const uint32_t* s_crcTable[] =
 	s_crcTableCastagnoli,
 	s_crcTableKoopman,
 };
-BX_STATIC_ASSERT(BX_COUNTOF(s_crcTable) == HashCrc32::Count);
+BASE_STATIC_ASSERT(BASE_COUNTOF(s_crcTable) == HashCrc32::Count);
 
 void HashCrc32::begin(Enum _type)
 {
@@ -154,9 +154,9 @@ struct HashMurmur2APod
 	uint32_t m_count;
 	uint32_t m_size;
 };
-BX_STATIC_ASSERT(sizeof(HashMurmur2A) == sizeof(HashMurmur2APod) );
+BASE_STATIC_ASSERT(sizeof(HashMurmur2A) == sizeof(HashMurmur2APod) );
 
-BX_FORCE_INLINE void mmix(uint32_t& _h, uint32_t& _k)
+BASE_FORCE_INLINE void mmix(uint32_t& _h, uint32_t& _k)
 {
 	constexpr uint32_t kMurmurMul = 0x5bd1e995;
 	constexpr uint32_t kMurmurRightShift = 24;
@@ -188,14 +188,14 @@ static void mixTail(HashMurmur2APod& _self, const uint8_t*& _data, int32_t& _len
 	}
 }
 
-BX_FORCE_INLINE uint32_t readAligned(const uint8_t* _data)
+BASE_FORCE_INLINE uint32_t readAligned(const uint8_t* _data)
 {
 	return *(uint32_t*)_data;
 }
 
-BX_FORCE_INLINE uint32_t readUnaligned(const uint8_t* _data)
+BASE_FORCE_INLINE uint32_t readUnaligned(const uint8_t* _data)
 {
-	if (BX_ENABLED(BX_CPU_ENDIAN_BIG) )
+	if (BASE_ENABLED(BASE_CPU_ENDIAN_BIG) )
 	{
 		return 0
 			| _data[0]<<24
@@ -242,7 +242,7 @@ void HashMurmur2A::add(const void* _data, int32_t _len)
 	m_size += _len;
 	mixTail(self, data, _len);
 
-	if (BX_UNLIKELY(!isAligned(data, 4) ) )
+	if (BASE_UNLIKELY(!isAligned(data, 4) ) )
 	{
 		addData<readUnaligned>(self, data, _len);
 		return;
@@ -265,4 +265,4 @@ uint32_t HashMurmur2A::end()
 	return m_hash;
 }
 
-} // namespace bx
+} // namespace base
