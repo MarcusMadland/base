@@ -6,7 +6,7 @@
 #ifndef BASE_HANDLE_ALLOC_H_HEADER_GUARD
 #define BASE_HANDLE_ALLOC_H_HEADER_GUARD
 
-#include "base.h"
+//#include "base.h"
 #include "allocator.h"
 #include "uint32_t.h"
 
